@@ -124,7 +124,7 @@ tasks.withType(JavaCompile) {
 
 task putGitInfo(type: Exec) {
     doFirst {
-        commandLine "java", "-classpath", "$projectDir/build/classes/java/main/", "frc.robot.util.GitVersion"
+        commandLine "java", "-classpath", "$projectDir/build/classes/java/main/", "frc.bearbotics.util.GitVersion"
     }
 }
 

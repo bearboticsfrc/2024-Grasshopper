@@ -1,6 +1,6 @@
 package frc.robot.constants.manipulator;
 
-public class IntakeConstants {
+public abstract class IntakeConstants {
 
   // TODO: Update INTAKE_BEAM_BREAK_CHANNEL
   public static final int INTAKE_BEAM_BREAK_CHANNEL = -1;

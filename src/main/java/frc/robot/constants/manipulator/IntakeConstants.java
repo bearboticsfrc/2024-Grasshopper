@@ -7,7 +7,7 @@ public abstract class IntakeConstants {
 
   public static class IntakeMotor {
     public static final String NAME = "Intake Motor";
-    // TODO: Update Motor_PORT
+    // TODO: Update MOTOR_PORT
     public static final int MOTOR_PORT = -1;
     public static final int CURRENT_LIMT = 20;
     public static final boolean INVERTED = true;

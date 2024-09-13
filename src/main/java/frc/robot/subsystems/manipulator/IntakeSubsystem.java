@@ -16,12 +16,12 @@ public class IntakeSubsystem extends SubsystemBase {
   private final boolean SHUFFLEBOARD_ENABLED = false;
 
   /*
-   * the object for the
+   * the object for the intake motor
    */
   private CANSparkMax intakeMotor;
 
   /*
-   *
+   *the relative encoder on the intake motor
    */
   private RelativeEncoder intakeMotorEncoder;
 
@@ -37,6 +37,7 @@ public class IntakeSubsystem extends SubsystemBase {
   public IntakeSubsystem() {
     configureMotors();
   }
+
   // TODO: maybe remove and integrate into the constructor for the intake subsystem
   /*
    * sets up the motor for the intake
@@ -58,8 +59,6 @@ public class IntakeSubsystem extends SubsystemBase {
     shuffleboardTab.addBoolean("Intake Sensor Beam Break", intakeBeamBreak::get);
   }
 
-  // TODO: check with mason to see if sensor is needed in intake or it is integrater in the shooter
-  // subsystem
   /*
    * checks to see if there is a note in the intake
    */

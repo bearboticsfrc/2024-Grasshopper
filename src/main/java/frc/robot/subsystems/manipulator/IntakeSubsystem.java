@@ -1,17 +1,20 @@
 package frc.robot.subsystems.manipulator;
 
+import com.revrobotics.CANSparkLowLevel;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.bearbotics.motor.MotorBuilder;
+import frc.bearbotics.motor.MotorConfig;
+import frc.robot.constants.RobotConstants;
 import frc.robot.constants.manipulator.IntakeConstants;
 
 public class IntakeSubsystem extends SubsystemBase {
 
   /*
-   * whether the shuffleboard is enable or not
+   * whether the shuffleboard is enabled or not
    */
   private final boolean SHUFFLEBOARD_ENABLED = false;
 
@@ -36,6 +39,10 @@ public class IntakeSubsystem extends SubsystemBase {
    */
   public IntakeSubsystem() {
     configureMotors();
+
+    if (SHUFFLEBOARD_ENABLED) {
+      setupShuffleboardTab(RobotConstants.INTAKE_SYSTEM_TAB);
+    }
   }
 
   // TODO: maybe remove and integrate into the constructor for the intake subsystem
@@ -43,16 +50,26 @@ public class IntakeSubsystem extends SubsystemBase {
    * sets up the motor for the intake
    */
   private void configureMotors() {
-    MotorBuilder intakeMotor =
+    MotorBuilder intakeMotorBuilder =
         new MotorBuilder()
             .withName(IntakeConstants.IntakeMotor.NAME)
             .withMotorPort(IntakeConstants.IntakeMotor.MOTOR_PORT)
             .withMotorInverted(IntakeConstants.IntakeMotor.INVERTED)
             .withCurrentLimit(IntakeConstants.IntakeMotor.CURRENT_LIMT);
+
+    intakeMotor =
+        new CANSparkMax(intakeMotorBuilder.getMotorPort(), CANSparkLowLevel.MotorType.kBrushless);
+
+    intakeMotorEncoder = intakeMotor.getEncoder();
+
+    MotorConfig.fromMotorConstants(intakeMotor, intakeMotorEncoder, intakeMotorBuilder)
+        .configureMotor()
+        .configureEncoder()
+        .burnFlash();
   }
 
   /*
-   * Adds the spped of the intake and the output of the sensor into shuffleboard
+   * Adds the speed of the intake and the output of the sensor into shuffleboard
    */
   private void setupShuffleboardTab(ShuffleboardTab shuffleboardTab) {
     shuffleboardTab.addDouble("Intake Velocity", intakeMotorEncoder::getVelocity);

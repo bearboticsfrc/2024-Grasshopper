@@ -74,6 +74,22 @@ public class IntakeSubsystem extends SubsystemBase {
   }
 
   /*
+   * stop intake
+   */
+
+  public void stop() {
+    intakeMotor.set(0);
+  }
+
+  /*
+   * drop note by reversing intake
+   */
+
+  public void drop() {
+    setIntake(IntakeSpeed.REVERSE);
+  }
+
+  /*
    * The enum for all possible speed values of the intake motor
    */
   public enum IntakeSpeed {

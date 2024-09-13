@@ -155,12 +155,11 @@ public class ShooterSubsystem extends SubsystemBase {
   }
 
   /** set the target postition for the angle driver */
-
-  /** Stop both shooting motors. */
   public void setPosition(double position) {
     angleMotor.getPIDController().setReference(position, CANSparkMax.ControlType.kPosition);
   }
 
+  /** Stop both shooting motors. */
   public void stopShooter() {
     upperShootingMotor.stopMotor();
     lowerShootingMotor.stopMotor();
@@ -175,39 +174,19 @@ public class ShooterSubsystem extends SubsystemBase {
     stopAngleMotor();
   }
 
-  public enum ShooterVelocity {
-    SUBWOOFER_SHOOT(0),
-    PODIUM_SHOOT(0),
-    BLOOP_SHOOT(0),
-    AMP_SHOOT(0),
-    STAGE_SHOOT(0);
+  /*
+   * sets the speed of the angle motor
+   */
 
-    private double velocity;
-
-    private ShooterVelocity(double velocity) {
-      this.velocity = velocity;
-    }
-
-    public double getVelocity() {
-      return velocity;
-    }
+  public void setAngleSpeed(double speed) {
+    angleMotor.set(speed);
   }
 
-  public enum AnglePosition {
-    SUBWOOFER_SHOOT(0),
-    PODIUM_SHOOT(0),
-    BLOOP_SHOOT(0),
-    AMP_SHOOT(0),
-    STAGE_SHOOT(0);
+  /*
+   * returns true if the shooter is in its home position
+   */
 
-    private double position;
-
-    private AnglePosition(double position) {
-      this.position = position;
-    }
-
-    public double getPosition() {
-      return position;
-    }
+  public boolean isHome() {
+    return bottomLimitSwitchAngleMotor.get();
   }
 }

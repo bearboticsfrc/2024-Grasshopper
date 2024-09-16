@@ -130,6 +130,7 @@ task putGitInfo(type: Exec) {
 
 //force this task to run before jar packaging
 jar.dependsOn putGitInfo
+
 // Configure jar and deploy tasks
 deployArtifact.jarTask = jar
 wpi.java.configureExecutableTasks(jar)

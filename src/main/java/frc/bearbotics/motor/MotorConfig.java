@@ -13,6 +13,7 @@ import frc.bearbotics.util.RevUtil;
 
 /** Configuration class for motor parameters, including feedback sensors and builders. */
 public class MotorConfig {
+  private final double BURN_FLASH_DELAY = 0.25;
 
   private StringLogEntry logEntry =
       new StringLogEntry(DataLogManager.getLog(), "MotorConfig/Config");
@@ -52,6 +53,10 @@ public class MotorConfig {
    * @return This MotorConfig instance for method chaining.
    */
   public MotorConfig configureMotor() {
+    RevUtil.checkRevError(
+        motor.restoreFactoryDefaults(),
+        "[MotorConfig.configureMotor]: Failed to reset factory defaults");
+
     motor.setInverted(motorBuilder.isMotorInverted());
 
     String motorDescription = motorBuilder.getName();
@@ -333,13 +338,13 @@ public class MotorConfig {
   public void burnFlash() {
     String message =
         String.format(
-            "[MotorConfig.burnFlash] %s:\n\tBurn flash delay (seconds) -> 0.25\n",
-            motorBuilder.getName(), 0.25);
+            "[MotorConfig.burnFlash] %s:\n\tBurn flash delay (seconds) -> %s\n",
+            motorBuilder.getName(), BURN_FLASH_DELAY);
     logEntry.append(message);
 
-    Timer.delay(0.25);
+    Timer.delay(BURN_FLASH_DELAY);
     RevUtil.checkRevError(motor.burnFlash(), "[MotorConfig.burnFlash]: Failed to burn flash");
-    Timer.delay(0.25);
+    Timer.delay(BURN_FLASH_DELAY);
     // Burn parameters onto motor flash
     // might not work, needs a delay after setting values
   }

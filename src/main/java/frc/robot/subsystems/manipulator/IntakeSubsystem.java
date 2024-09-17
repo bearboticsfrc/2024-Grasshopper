@@ -10,33 +10,20 @@ import frc.bearbotics.motor.MotorBuilder;
 import frc.bearbotics.motor.MotorConfig;
 import frc.robot.constants.RobotConstants;
 import frc.robot.constants.manipulator.IntakeConstants;
+import frc.robot.constants.manipulator.IntakeConstants.IntakeVelocity;
 
 public class IntakeSubsystem extends SubsystemBase {
+  private final boolean SHUFFLEBOARD_ENABLED = true;
 
-  /*
-   * whether the shuffleboard is enabled or not
-   */
-  private final boolean SHUFFLEBOARD_ENABLED = false;
-
-  /*
-   * the object for the intake motor
-   */
   private CANSparkMax intakeMotor;
-
-  /*
-   *the relative encoder on the intake motor
-   */
   private RelativeEncoder intakeMotorEncoder;
 
-  /*
-   *
-   */
-  private final DigitalInput intakeBeamBreak =
-      new DigitalInput(IntakeConstants.INTAKE_BEAM_BREAK_CHANNEL);
+  private final DigitalInput rollerBeamBreak =
+      new DigitalInput(IntakeConstants.ROLLER_BEAM_BREAK_CHANNEL);
+  private final DigitalInput shooterBeamBreak =
+      new DigitalInput(IntakeConstants.SHOOTER_BEAM_BREAK_CHANNEL);
 
-  /*
-   * The constructor for the intake subsytem
-   */
+  /** The constructor for the intake subsytem */
   public IntakeSubsystem() {
     configureMotors();
 
@@ -45,10 +32,7 @@ public class IntakeSubsystem extends SubsystemBase {
     }
   }
 
-  // TODO: maybe remove and integrate into the constructor for the intake subsystem
-  /*
-   * sets up the motor for the intake
-   */
+  /** Configures the motor for the intake */
   private void configureMotors() {
     MotorBuilder intakeMotorBuilder =
         new MotorBuilder()
@@ -68,73 +52,43 @@ public class IntakeSubsystem extends SubsystemBase {
         .burnFlash();
   }
 
-  /*
-   * Adds the speed of the intake and the output of the sensor into shuffleboard
-   */
+  /** Adds the speed of the intake and the output of the sensor into shuffleboard */
   private void setupShuffleboardTab(ShuffleboardTab shuffleboardTab) {
-    shuffleboardTab.addDouble("Intake Velocity", intakeMotorEncoder::getVelocity);
-    shuffleboardTab.addBoolean("Intake Sensor Beam Break", intakeBeamBreak::get);
+    shuffleboardTab.addDouble("Intake Encoder Velocity", intakeMotorEncoder::getVelocity);
+    shuffleboardTab.addDouble("Intake Motor Temperature", intakeMotor::getMotorTemperature);
+    shuffleboardTab.addBoolean("Lower Intake Beam Break", rollerBeamBreak::get);
+    shuffleboardTab.addBoolean("Upper Intake Beam Break", shooterBeamBreak::get);
   }
 
-  /*
-   * checks to see if there is a note in the intake
+  /**
+   * Whether the lower intake beam break is active, indicating the presence of a note.
+   *
+   * @return True if the beam break is active, otherwise false.
    */
   public boolean isNoteInRoller() {
-    return !intakeBeamBreak.get();
+    return !rollerBeamBreak.get();
   }
 
-  /*
-   * sets the speed of the intake motor
+  /**
+   * Whether the upper intake beam break is active, indicating the presence of a note.
+   *
+   * @return True if the beam break is active, otherwise false.
    */
-  public void setIntake(IntakeSpeed speed) {
+  public boolean isNoteInShooter() {
+    return !shooterBeamBreak.get();
+  }
+
+  /**
+   * Set the speed of the intake motor
+   *
+   * @param position An enum representing the intake speed.
+   */
+  public void set(IntakeVelocity speed) {
     intakeMotor.set(speed.getSpeed());
   }
 
-  /*
-   * stop intake
-   */
-
+  /** Stop the intake motor */
   public void stop() {
-    intakeMotor.set(0);
-  }
-
-  /*
-   * drop note by reversing intake
-   */
-
-  public void drop() {
-    setIntake(IntakeSpeed.REVERSE);
-  }
-
-  /*
-   * The enum for all possible speed values of the intake motor
-   */
-  public enum IntakeSpeed {
-    REVERSE(-1),
-    OFF(0),
-    TENTH(0.1),
-    QUARTER(0.25),
-    HALF(0.5),
-    FULL(1);
-
-    private final double speed;
-
-    /**
-     * Constructor for IntakeSpeed.
-     *
-     * @param speed The speed value associated with the intake speed.
-     */
-    private IntakeSpeed(double speed) {
-      this.speed = speed;
-    }
-
-    /**
-     * Get the speed value associated with the intake speed.
-     *
-     * @return The speed value.
-     */
-    public double getSpeed() {
-      return speed;
-    }
+    intakeMotor.stopMotor();
   }
 }

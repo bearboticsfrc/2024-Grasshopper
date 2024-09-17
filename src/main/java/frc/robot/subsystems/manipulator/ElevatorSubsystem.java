@@ -21,7 +21,7 @@ public class ElevatorSubsystem extends SubsystemBase {
 
   private RelativeEncoder elevatorMotorEncoder;
 
-  private final DigitalInput bottomLimitSwitch =
+  private final DigitalInput lowerLimitSwitch =
       new DigitalInput(ElevatorConstants.LOWER_LIMIT_SWITCH_CHANNEL);
   private final DigitalInput upperLimitSwitch =
       new DigitalInput(ElevatorConstants.UPPER_LIMIT_SWITCH_CHANNEL);
@@ -66,6 +66,9 @@ public class ElevatorSubsystem extends SubsystemBase {
   private void setupShuffleboardTab(ShuffleboardTab shuffleboardTab) {
     shuffleboardTab.addDouble("Elevator Motor Encoder Position", elevatorMotorEncoder::getPosition);
     shuffleboardTab.addDouble("Elevator Motor Temperature", elevatorMotor::getMotorTemperature);
+
+    shuffleboardTab.addBoolean("Lower Limit Switch", lowerLimitSwitch::get);
+    shuffleboardTab.addBoolean("Upper Limit Switch", upperLimitSwitch::get);
   }
 
   /**
@@ -94,13 +97,13 @@ public class ElevatorSubsystem extends SubsystemBase {
   }
 
   /**
-   * Whether the bottom limit switch is active, indicating the elevator motor is at it's lowest
+   * Whether the lowwe limit switch is active, indicating the elevator motor is at it's lowest
    * position
    *
    * @return True if the limit switch is active, otherwise false
    */
   public boolean isAtLowerLimit() {
-    return bottomLimitSwitch.get();
+    return lowerLimitSwitch.get();
   }
 
   /**

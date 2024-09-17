@@ -17,10 +17,10 @@ import frc.robot.constants.manipulator.ShooterConstants.ShooterVelocity;
 public class ShooterSubsystem extends SubsystemBase {
   private final boolean SHUFFLEBOARD_ENABLED = true;
 
-  private CANSparkFlex UpperShooterMotorMotor;
+  private CANSparkFlex upperShooterMotor;
   private CANSparkFlex lowerShooterMotor;
 
-  private RelativeEncoder UpperShooterMotorMotorEncoder;
+  private RelativeEncoder upperShooterMotorEncoder;
   private RelativeEncoder lowerShooterMotorEncoder;
 
   private double targetVelocity;
@@ -35,7 +35,7 @@ public class ShooterSubsystem extends SubsystemBase {
 
   /** Configure the shooter motors */
   private void configureMotors() {
-    MotorPidBuilder UpperShooterMotorMotorPidBuilder =
+    MotorPidBuilder UpperShooterMotorPidBuilder =
         new MotorPidBuilder()
             .withP(ShooterConstants.UpperShooterMotor.MotorPid.P)
             .withFf(ShooterConstants.UpperShooterMotor.MotorPid.Ff);
@@ -45,13 +45,13 @@ public class ShooterSubsystem extends SubsystemBase {
             .withP(ShooterConstants.LowerShooterMotor.MotorPid.P)
             .withFf(ShooterConstants.LowerShooterMotor.MotorPid.Ff);
 
-    MotorBuilder UpperShooterMotorMotorConfig =
+    MotorBuilder upperShooterMotorConfig =
         new MotorBuilder()
             .withName(ShooterConstants.UpperShooterMotor.NAME)
             .withMotorPort(ShooterConstants.UpperShooterMotor.MOTOR_PORT)
             .withMotorInverted(ShooterConstants.UpperShooterMotor.INVERTED)
             .withCurrentLimit(ShooterConstants.UpperShooterMotor.CURRENT_LIMT)
-            .withMotorPid(UpperShooterMotorMotorPidBuilder)
+            .withMotorPid(UpperShooterMotorPidBuilder)
             .withIdleMode(IdleMode.kCoast);
 
     MotorBuilder lowerShooterMotorConfig =
@@ -63,18 +63,18 @@ public class ShooterSubsystem extends SubsystemBase {
             .withMotorPid(lowerShooterMotorPidBuilder)
             .withIdleMode(IdleMode.kCoast);
 
-    UpperShooterMotorMotor =
+    upperShooterMotor =
         new CANSparkFlex(
-            UpperShooterMotorMotorConfig.getMotorPort(), CANSparkLowLevel.MotorType.kBrushless);
+            upperShooterMotorConfig.getMotorPort(), CANSparkLowLevel.MotorType.kBrushless);
     lowerShooterMotor =
         new CANSparkFlex(
             lowerShooterMotorConfig.getMotorPort(), CANSparkLowLevel.MotorType.kBrushless);
 
-    UpperShooterMotorMotorEncoder = UpperShooterMotorMotor.getEncoder();
+    upperShooterMotorEncoder = upperShooterMotor.getEncoder();
     lowerShooterMotorEncoder = lowerShooterMotor.getEncoder();
 
     MotorConfig.fromMotorConstants(
-            UpperShooterMotorMotor, UpperShooterMotorMotorEncoder, UpperShooterMotorMotorConfig)
+            upperShooterMotor, upperShooterMotorEncoder, upperShooterMotorConfig)
         .configureMotor()
         .configureEncoder()
         .burnFlash();
@@ -92,13 +92,13 @@ public class ShooterSubsystem extends SubsystemBase {
    * @param shuffleboardTab The shuffleboard tab
    */
   private void setupShuffleboardTab(ShuffleboardTab shuffleboardTab) {
-    shuffleboardTab.addDouble("Upper Shooter Vel", UpperShooterMotorMotorEncoder::getVelocity);
+    shuffleboardTab.addDouble("Upper Shooter Vel", upperShooterMotorEncoder::getVelocity);
     shuffleboardTab.addDouble("Lower Shooter Vel", lowerShooterMotorEncoder::getVelocity);
 
-    shuffleboardTab.addDouble("Upper Shooter Cur", UpperShooterMotorMotor::getOutputCurrent);
+    shuffleboardTab.addDouble("Upper Shooter Cur", upperShooterMotor::getOutputCurrent);
     shuffleboardTab.addDouble("Lower Shooter Cur", lowerShooterMotor::getOutputCurrent);
 
-    shuffleboardTab.addDouble("Upper Shooter Temp", UpperShooterMotorMotor::getMotorTemperature);
+    shuffleboardTab.addDouble("Upper Shooter Temp", upperShooterMotor::getMotorTemperature);
     shuffleboardTab.addDouble("Lower Shooter Temp", lowerShooterMotor::getMotorTemperature);
 
     shuffleboardTab.addDouble("Target Velocity", () -> targetVelocity);
@@ -112,8 +112,7 @@ public class ShooterSubsystem extends SubsystemBase {
    */
   public boolean atTargetVelocity() {
     return targetVelocity
-            - (lowerShooterMotorEncoder.getVelocity() + UpperShooterMotorMotorEncoder.getVelocity())
-                / 2
+            - (lowerShooterMotorEncoder.getVelocity() + upperShooterMotorEncoder.getVelocity()) / 2
         < ShooterConstants.VELOCITY_TOLERANCE;
   }
 
@@ -123,7 +122,8 @@ public class ShooterSubsystem extends SubsystemBase {
    * @param velocity The desired velocity for the shooter motor.
    */
   public void set(ShooterVelocity velocity) {
-    UpperShooterMotorMotor.getPIDController()
+    upperShooterMotor
+        .getPIDController()
         .setReference(velocity.getVelocity(), CANSparkMax.ControlType.kVelocity);
     lowerShooterMotor
         .getPIDController()
@@ -132,7 +132,7 @@ public class ShooterSubsystem extends SubsystemBase {
 
   /** Stop both shooter motors. */
   public void stopMotor() {
-    UpperShooterMotorMotor.stopMotor();
+    upperShooterMotor.stopMotor();
     lowerShooterMotor.stopMotor();
   }
 }

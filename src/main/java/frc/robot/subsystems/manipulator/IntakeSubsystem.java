@@ -56,8 +56,9 @@ public class IntakeSubsystem extends SubsystemBase {
   private void setupShuffleboardTab(ShuffleboardTab shuffleboardTab) {
     shuffleboardTab.addDouble("Intake Encoder Velocity", intakeMotorEncoder::getVelocity);
     shuffleboardTab.addDouble("Intake Motor Temperature", intakeMotor::getMotorTemperature);
-    shuffleboardTab.addBoolean("Lower Intake Beam Break", rollerBeamBreak::get);
-    shuffleboardTab.addBoolean("Upper Intake Beam Break", shooterBeamBreak::get);
+
+    shuffleboardTab.addBoolean("Roller Beam Break", rollerBeamBreak::get);
+    shuffleboardTab.addBoolean("Shooter Beam Break", shooterBeamBreak::get);
   }
 
   /**

@@ -11,7 +11,7 @@ import frc.robot.constants.manipulator.ShooterConstants.ShooterVelocity;
 public class ManipulatorSubsystem extends SubsystemBase {
   private final IntakeSubsystem intake;
   private final ShooterSubsystem shooter;
-  private final ElevatorSubsystem angle;
+  private final ElevatorSubsystem elevator;
 
   /**
    * Constructor for the ManipulatorSubsystem class. Initializes intake, and shooter/aimer
@@ -20,19 +20,19 @@ public class ManipulatorSubsystem extends SubsystemBase {
   public ManipulatorSubsystem() {
     intake = new IntakeSubsystem();
     shooter = new ShooterSubsystem();
-    angle = new ElevatorSubsystem();
+    elevator = new ElevatorSubsystem();
   }
 
   /**
-   * Get the angle subsytem home command
+   * Get the elevator subsytem home command
    *
    * @return The command
    */
-  public Command getAngleHomeCommand() {
+  public Command getElevatorHomeCommand() {
     return Commands.sequence(
-        angle.runOnce(() -> angle.set(ElevatorConstants.HOMING_SPEED)),
-        Commands.waitUntil(angle::isAtLowerLimit),
-        angle.runOnce(angle::stopMotor));
+        elevator.runOnce(() -> elevator.set(ElevatorConstants.HOMING_SPEED)),
+        Commands.waitUntil(elevator::isAtLowerLimit),
+        elevator.runOnce(elevator::stopMotor));
   }
 
   /**
@@ -61,14 +61,15 @@ public class ManipulatorSubsystem extends SubsystemBase {
   }
 
   /**
-   * Get the angle subsytem set command
+   * Get the elevator subsytem set command
    *
-   * @param position The position to set the angle to
+   * @param position The position to set the elevator to
    * @return The command
    */
-  public Command getAngleSetCommand(ElevatorPosition position) {
+  public Command getElevatorSetCommand(ElevatorPosition position) {
     return Commands.sequence(
-        angle.runOnce(() -> angle.set(position)), Commands.waitUntil(angle::atTargetPosition));
+        elevator.runOnce(() -> elevator.set(position)),
+        Commands.waitUntil(elevator::atTargetPosition));
   }
 
   /**

@@ -76,7 +76,7 @@ public class IntakeSubsystem extends SubsystemBase {
    * @return True if the beam break is active, otherwise false.
    */
   public boolean isNoteInShooter() {
-    return !shooterBeamBreak.get();
+    return shooterBeamBreak.get();
   }
 
   /**

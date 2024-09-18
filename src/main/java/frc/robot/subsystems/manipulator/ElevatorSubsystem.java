@@ -36,6 +36,7 @@ public class ElevatorSubsystem extends SubsystemBase {
     }
   }
 
+  /** Configures the motors */
   private void configureMotors() {
     MotorPidBuilder elevatorMotorPidBuilder =
         new MotorPidBuilder()
@@ -63,12 +64,23 @@ public class ElevatorSubsystem extends SubsystemBase {
         .burnFlash();
   }
 
+  /** Publishes telemetry to shuffleboard */
   private void setupShuffleboardTab(ShuffleboardTab shuffleboardTab) {
     shuffleboardTab.addDouble("Elevator Motor Encoder Position", elevatorMotorEncoder::getPosition);
     shuffleboardTab.addDouble("Elevator Motor Temperature", elevatorMotor::getMotorTemperature);
 
-    shuffleboardTab.addBoolean("Lower Limit Switch", lowerLimitSwitch::get);
-    shuffleboardTab.addBoolean("Upper Limit Switch", upperLimitSwitch::get);
+    shuffleboardTab.addBoolean("Is At Lower Limit?", this::isAtLowerLimit);
+    shuffleboardTab.addBoolean("Is At Upper Limit?", this::isAtUpperLimit);
+  }
+
+  @Override
+  public void periodic() {
+    // Over-extension protection in conjunction with the motors soft limits
+    if (isAtLowerLimit() && elevatorMotor.get() > 0) {
+      stopMotor();
+    } else if (isAtUpperLimit() && elevatorMotor.get() < 0) {
+      stopMotor();
+    }
   }
 
   /**
@@ -103,7 +115,7 @@ public class ElevatorSubsystem extends SubsystemBase {
    * @return True if the limit switch is active, otherwise false
    */
   public boolean isAtLowerLimit() {
-    return lowerLimitSwitch.get();
+    return !lowerLimitSwitch.get();
   }
 
   /**
@@ -113,7 +125,7 @@ public class ElevatorSubsystem extends SubsystemBase {
    * @return True if the limit switch is active, otherwise false
    */
   public boolean isAtUpperLimit() {
-    return upperLimitSwitch.get();
+    return !upperLimitSwitch.get();
   }
 
   /**

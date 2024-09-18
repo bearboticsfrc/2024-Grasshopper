@@ -52,13 +52,13 @@ public class IntakeSubsystem extends SubsystemBase {
         .burnFlash();
   }
 
-  /** Adds the speed of the intake and the output of the sensor into shuffleboard */
+  /** Publishes telemetry to shuffleboard */
   private void setupShuffleboardTab(ShuffleboardTab shuffleboardTab) {
     shuffleboardTab.addDouble("Intake Encoder Velocity", intakeMotorEncoder::getVelocity);
     shuffleboardTab.addDouble("Intake Motor Temperature", intakeMotor::getMotorTemperature);
 
-    shuffleboardTab.addBoolean("Roller Beam Break", rollerBeamBreak::get);
-    shuffleboardTab.addBoolean("Shooter Beam Break", shooterBeamBreak::get);
+    shuffleboardTab.addBoolean("Is Note in Roller?", this::isNoteInRoller);
+    shuffleboardTab.addBoolean("Is Note in Shooter?", this::isNoteInShooter);
   }
 
   /**

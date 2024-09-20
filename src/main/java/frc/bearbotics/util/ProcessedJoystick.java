@@ -89,7 +89,7 @@ public class ProcessedJoystick {
   public enum ThrottleProfile {
     TURBO(2),
     NORMAL(1),
-    TURTLE(0.5);
+    TURTLE(0.1);
 
     private final double MAX_VELOCITY = DriveConstants.MAX_VELOCITY;
 

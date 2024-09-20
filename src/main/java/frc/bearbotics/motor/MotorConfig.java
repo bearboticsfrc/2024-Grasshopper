@@ -149,19 +149,19 @@ public class MotorConfig {
       RevUtil.checkRevError(
           ((RelativeEncoder) motorEncoder).setPosition(initialPosition),
           String.format(
-              "[MotorCongig.configureEncoder]: Failed to set motor encoder position to %s",
+              "[MotorConfig.configureEncoder]: Failed to set motor encoder position to %s",
               initialPosition));
       RevUtil.checkRevError(
           ((RelativeEncoder) motorEncoder)
               .setPositionConversionFactor(motorBuilder.getPositionConversionFactor()),
           String.format(
-              "[MotorCongig.configureEncoder]: Failed to set position conversion factor to %s",
+              "[MotorConfig.configureEncoder]: Failed to set position conversion factor to %s",
               motorBuilder.getPositionConversionFactor()));
       RevUtil.checkRevError(
           ((RelativeEncoder) motorEncoder)
               .setVelocityConversionFactor(motorBuilder.getVelocityConversionFactor()),
           String.format(
-              "[MotorCongig.configureEncoder]: Failed to set velocity conversion factor to %s",
+              "[MotorConfig.configureEncoder]: Failed to set velocity conversion factor to %s",
               motorBuilder.getVelocityConversionFactor()));
     } else if (motorEncoder instanceof AbsoluteEncoder) {
       RevUtil.checkRevError(
@@ -170,13 +170,13 @@ public class MotorConfig {
           ((AbsoluteEncoder) motorEncoder)
               .setPositionConversionFactor(motorBuilder.getPositionConversionFactor()),
           String.format(
-              "[MotorCongig.configureEncoder]: Failed to set position conversion factor to %s",
+              "[MotorConfig.configureEncoder]: Failed to set position conversion factor to %s",
               motorBuilder.getPositionConversionFactor()));
       RevUtil.checkRevError(
           ((AbsoluteEncoder) motorEncoder)
               .setVelocityConversionFactor(motorBuilder.getVelocityConversionFactor()),
           String.format(
-              "[MotorCongig.configureEncoder]: Failed to set velocity conversion factor to %s",
+              "[MotorConfig.configureEncoder]: Failed to set velocity conversion factor to %s",
               motorBuilder.getVelocityConversionFactor()));
     } else if (motorEncoder instanceof SparkAbsoluteEncoder) {
       ((SparkAbsoluteEncoder) motorEncoder).setInverted(motorBuilder.isEncoderInverted());
@@ -184,13 +184,13 @@ public class MotorConfig {
           ((SparkAbsoluteEncoder) motorEncoder)
               .setPositionConversionFactor(motorBuilder.getPositionConversionFactor()),
           String.format(
-              "[MotorCongig.configureEncoder]: Failed to set position conversion factor to %s",
+              "[MotorConfig.configureEncoder]: Failed to set position conversion factor to %s",
               motorBuilder.getPositionConversionFactor()));
       RevUtil.checkRevError(
           ((SparkAbsoluteEncoder) motorEncoder)
               .setVelocityConversionFactor(motorBuilder.getVelocityConversionFactor()),
           String.format(
-              "[MotorCongig.configureEncoder]: Failed to set velocity conversion factor to %s",
+              "[MotorConfig.configureEncoder]: Failed to set velocity conversion factor to %s",
               motorBuilder.getVelocityConversionFactor()));
     }
 
@@ -205,7 +205,7 @@ public class MotorConfig {
       message += String.format("Set feedback device -> %s\n", motorEncoder.getClass());
       RevUtil.checkRevError(
           motor.getPIDController().setFeedbackDevice(motorEncoder),
-          "[MotorCongig.configureEncoder]: Failed to set PID feedback device");
+          "[MotorConfig.configureEncoder]: Failed to set PID feedback device");
     }
 
     logEntry.append(message);

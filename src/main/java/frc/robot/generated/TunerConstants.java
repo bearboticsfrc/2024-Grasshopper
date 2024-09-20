@@ -1,6 +1,7 @@
 package frc.robot.generated;
 
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
+import com.ctre.phoenix6.configs.ClosedLoopRampsConfigs;
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.configs.Pigeon2Configuration;
 import com.ctre.phoenix6.configs.Slot0Configs;
@@ -42,12 +43,13 @@ public class TunerConstants {
   // Some configs will be overwritten; check the `with*InitialConfigs()` API documentation.
   private static final TalonFXConfiguration driveInitialConfigs =
       new TalonFXConfiguration()
+          .withClosedLoopRamps(new ClosedLoopRampsConfigs().withDutyCycleClosedLoopRampPeriod(1))
           .withCurrentLimits(
               new CurrentLimitsConfigs()
                   // Swerve azimuth does not require much torque output, so we can set a relatively
                   // low
                   // stator current limit to help avoid brownouts without impacting performance.
-                  .withStatorCurrentLimit(160)
+                  .withStatorCurrentLimit(100)
                   .withStatorCurrentLimitEnable(true));
 
   private static final TalonFXConfiguration steerInitialConfigs =
@@ -57,7 +59,7 @@ public class TunerConstants {
                   // Swerve azimuth does not require much torque output, so we can set a relatively
                   // low
                   // stator current limit to help avoid brownouts without impacting performance.
-                  .withStatorCurrentLimit(160)
+                  .withStatorCurrentLimit(80)
                   .withStatorCurrentLimitEnable(true));
 
   private static final CANcoderConfiguration cancoderInitialConfigs = new CANcoderConfiguration();

@@ -89,7 +89,7 @@ public class IntakeSubsystem extends SubsystemBase {
   }
 
   /** Stop the intake motor */
-  public void stop() {
+  public void stopMotor() {
     intakeMotor.stopMotor();
   }
 }

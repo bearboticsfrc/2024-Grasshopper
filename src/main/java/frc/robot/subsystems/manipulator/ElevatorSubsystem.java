@@ -1,6 +1,7 @@
 package frc.robot.subsystems.manipulator;
 
 import com.revrobotics.CANSparkBase.IdleMode;
+import com.revrobotics.CANSparkBase.SoftLimitDirection;
 import com.revrobotics.CANSparkLowLevel;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
@@ -10,6 +11,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.bearbotics.motor.MotorBuilder;
 import frc.bearbotics.motor.MotorConfig;
 import frc.bearbotics.motor.MotorPidBuilder;
+import frc.bearbotics.motor.MotorSoftLimit;
 import frc.robot.constants.RobotConstants;
 import frc.robot.constants.manipulator.ElevatorConstants;
 import frc.robot.constants.manipulator.ElevatorConstants.ElevatorPosition;
@@ -18,7 +20,6 @@ public class ElevatorSubsystem extends SubsystemBase {
   private final boolean SHUFFLEBOARD_ENABLED = true;
 
   private CANSparkMax elevatorMotor;
-
   private RelativeEncoder elevatorMotorEncoder;
 
   private final DigitalInput lowerLimitSwitch =
@@ -26,7 +27,7 @@ public class ElevatorSubsystem extends SubsystemBase {
   private final DigitalInput upperLimitSwitch =
       new DigitalInput(ElevatorConstants.UPPER_LIMIT_SWITCH_CHANNEL);
 
-  private double targetPosition;
+  private ElevatorPosition targetPosition = ElevatorPosition.HOME;
 
   public ElevatorSubsystem() {
     configureMotors();
@@ -39,11 +40,17 @@ public class ElevatorSubsystem extends SubsystemBase {
   /** Configures the motors */
   private void configureMotors() {
     MotorPidBuilder elevatorMotorPidBuilder =
-        new MotorPidBuilder()
-            .withP(ElevatorConstants.ElevatorMotor.MotorPid.P)
-            .withI(ElevatorConstants.ElevatorMotor.MotorPid.I)
-            .withMinOutput(ElevatorConstants.ElevatorMotor.MotorPid.MIN_OUTPUT)
-            .withMaxOutput(ElevatorConstants.ElevatorMotor.MotorPid.MAX_OUTPUT);
+        new MotorPidBuilder().withP(ElevatorConstants.ElevatorMotor.MotorPid.P);
+
+    MotorSoftLimit elevatorMotorForwardSoftLimit =
+        new MotorSoftLimit()
+            .withDirection(SoftLimitDirection.kForward)
+            .withLimit(ElevatorConstants.ElevatorMotor.FORWARD_SOFT_LIMIT);
+
+    MotorSoftLimit elevatorMotorReverseSoftLimit =
+        new MotorSoftLimit()
+            .withDirection(SoftLimitDirection.kReverse)
+            .withLimit(ElevatorConstants.ElevatorMotor.REVERSE_SOFT_LIMIT);
 
     MotorBuilder elevatorMotorConfig =
         new MotorBuilder()
@@ -52,6 +59,8 @@ public class ElevatorSubsystem extends SubsystemBase {
             .withMotorInverted(ElevatorConstants.ElevatorMotor.INVERTED)
             .withCurrentLimit(ElevatorConstants.ElevatorMotor.CURRENT_LIMT)
             .withMotorPid(elevatorMotorPidBuilder)
+            .withForwardSoftLimit(elevatorMotorForwardSoftLimit)
+            .withReverseSoftLimit(elevatorMotorReverseSoftLimit)
             .withIdleMode(IdleMode.kBrake);
 
     elevatorMotor =
@@ -60,6 +69,7 @@ public class ElevatorSubsystem extends SubsystemBase {
 
     MotorConfig.fromMotorConstants(elevatorMotor, elevatorMotorEncoder, elevatorMotorConfig)
         .configureMotor()
+        .configurePid()
         .configureEncoder()
         .burnFlash();
   }
@@ -68,17 +78,19 @@ public class ElevatorSubsystem extends SubsystemBase {
   private void setupShuffleboardTab(ShuffleboardTab shuffleboardTab) {
     shuffleboardTab.addDouble("Elevator Motor Encoder Position", elevatorMotorEncoder::getPosition);
     shuffleboardTab.addDouble("Elevator Motor Temperature", elevatorMotor::getMotorTemperature);
+    shuffleboardTab.addDouble("Elevator Motor Output Current", elevatorMotor::getOutputCurrent);
 
+    shuffleboardTab.addBoolean("Is At Target Position?", this::atTargetPosition);
     shuffleboardTab.addBoolean("Is At Lower Limit?", this::isAtLowerLimit);
     shuffleboardTab.addBoolean("Is At Upper Limit?", this::isAtUpperLimit);
   }
 
   @Override
   public void periodic() {
-    // Over-extension protection in conjunction with the motors soft limits
-    if (isAtLowerLimit() && elevatorMotor.get() > 0) {
+    // Over-extension protection in conjunction with the motor soft limits
+    if (isAtLowerLimit() && elevatorMotor.getAppliedOutput() < 0) {
       stopMotor();
-    } else if (isAtUpperLimit() && elevatorMotor.get() < 0) {
+    } else if (isAtUpperLimit() && elevatorMotor.getAppliedOutput() > 0) {
       stopMotor();
     }
   }
@@ -89,6 +101,8 @@ public class ElevatorSubsystem extends SubsystemBase {
    * @param position An enum representing the elevator position.
    */
   public void set(ElevatorPosition position) {
+    targetPosition = position;
+
     elevatorMotor
         .getPIDController()
         .setReference(position.getPosition(), CANSparkMax.ControlType.kPosition);
@@ -134,7 +148,17 @@ public class ElevatorSubsystem extends SubsystemBase {
    * @return True if the arm elevator motor is at its target position, false otherwise
    */
   public boolean atTargetPosition() {
-    return Math.abs(targetPosition - elevatorMotorEncoder.getPosition())
+    return Math.abs(targetPosition.getPosition() - elevatorMotorEncoder.getPosition())
         < ElevatorConstants.POSITION_TOLERANCE;
+  }
+
+  /** Max the encoder for bypassing the reverse soft limit. */
+  public void maxEncoder() {
+    elevatorMotorEncoder.setPosition(ElevatorConstants.ElevatorMotor.FORWARD_SOFT_LIMIT);
+  }
+
+  /** Set the encoder position to 0. */
+  public void tareEncoder() {
+    elevatorMotorEncoder.setPosition(0);
   }
 }

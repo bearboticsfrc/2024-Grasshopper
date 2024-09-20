@@ -5,39 +5,84 @@
 package frc.robot;
 
 import com.ctre.phoenix6.mechanisms.swerve.SwerveRequest;
+import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import frc.bearbotics.util.ProcessedJoystick;
+import frc.bearbotics.util.ProcessedJoystick.JoystickAxis;
+import frc.bearbotics.util.ProcessedJoystick.ThrottleProfile;
+import frc.robot.constants.DriveConstants;
+import frc.robot.constants.RobotConstants;
+import frc.robot.constants.manipulator.ElevatorConstants.ElevatorPosition;
+import frc.robot.constants.manipulator.IntakeConstants.IntakeVelocity;
+import frc.robot.generated.TunerConstants;
+import frc.robot.subsystems.CommandSwerveDrivetrain;
+import frc.robot.subsystems.manipulator.ManipulatorSubsystem;
 
 public class RobotContainer {
   /* Our drivetrain */
   private final CommandSwerveDrivetrain drivetrain = TunerConstants.DriveTrain;
+
+  /* Our manipulator */
+  private final ManipulatorSubsystem manipulatorSubsystem = new ManipulatorSubsystem();
 
   /* Our driver joystick */
   private final CommandXboxController driverJoystick =
       new CommandXboxController(DriveConstants.DRIVER_CONTROLLER_PORT);
 
   /* Our processed joystick inputs */
-  private ThrottleProfile throttleProfile = ThrottleProfile.TURBO;
+  private ThrottleProfile throttleProfile = ThrottleProfile.NORMAL;
   private ProcessedJoystick processedJoystick =
       new ProcessedJoystick(driverJoystick, this::getThrottleProfile);
 
   public RobotContainer() {
-    configureSwerveDrive();
     configureBindings();
+    setupShuffleboardTab(RobotConstants.COMPETITION_TAB);
+  }
+
+  private void setupShuffleboardTab(ShuffleboardTab shuffleboardTab) {
+    shuffleboardTab.add("Home Elevator", manipulatorSubsystem.getElevatorHomeCommand());
   }
 
   /** Configure the joystick bindings for the robot. */
   private void configureBindings() {
     drivetrain.setDefaultCommand(drivetrain.applyRequest(this::getDefaultDriveRequest));
+    drivetrain.registerTelemetry(DriveConstants.LOGGER::telemeterize);
 
     driverJoystick.a().onTrue(drivetrain.runOnce(drivetrain::seedFieldRelative));
 
     driverJoystick
         .leftStick()
-        .whileTrue(drivetrain.runOnce(() -> setThrottleProfile(ThrottleProfile.NORMAL)))
-        .onFalse(drivetrain.runOnce(() -> setThrottleProfile(ThrottleProfile.TURBO)));
+        .whileTrue(Commands.runOnce(() -> setThrottleProfile(ThrottleProfile.TURBO)))
+        .onFalse(Commands.runOnce(() -> setThrottleProfile(ThrottleProfile.NORMAL)));
 
-    drivetrain.registerTelemetry(DriveConstants.LOGGER::telemeterize);
+    driverJoystick
+        .rightStick()
+        .whileTrue(Commands.runOnce(() -> setThrottleProfile(ThrottleProfile.TURTLE)))
+        .onFalse(Commands.runOnce(() -> setThrottleProfile(ThrottleProfile.NORMAL)));
+
+    driverJoystick
+        .leftBumper()
+        .whileTrue(manipulatorSubsystem.getIntakeCommand())
+        .onFalse(manipulatorSubsystem.getIntakeStopCommand());
+
+    driverJoystick
+        .rightBumper()
+        .whileTrue(manipulatorSubsystem.getIntakeSetCommand(IntakeVelocity.REVERSE))
+        .onFalse(manipulatorSubsystem.getIntakeStopCommand());
+
+    driverJoystick
+        .a()
+        .whileTrue(manipulatorSubsystem.getShooterSetCommand(0.095))
+        .onFalse(
+            manipulatorSubsystem
+                .getIntakeStopCommand()
+                .andThen(manipulatorSubsystem.getShooterStopCommand()));
+
+    driverJoystick.y().whileTrue(manipulatorSubsystem.getElevatorSetCommand(ElevatorPosition.LINE));
+    driverJoystick.b().whileTrue(manipulatorSubsystem.getElevatorSetCommand(ElevatorPosition.AMP));
+    driverJoystick.x().whileTrue(manipulatorSubsystem.getElevatorSetCommand(ElevatorPosition.HOME));
   }
 
   /**

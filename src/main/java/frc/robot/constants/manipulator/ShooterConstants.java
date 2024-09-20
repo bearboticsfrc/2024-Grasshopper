@@ -7,11 +7,11 @@ public abstract class ShooterConstants {
     public static final String NAME = "Upper Shooter Motor";
     public static final int MOTOR_PORT = 2;
     public static final int CURRENT_LIMT = 40;
-    public static final boolean INVERTED = false;
+    public static final boolean INVERTED = true;
 
     public static class MotorPid {
-      public static final double P = -1;
-      public static final double Ff = -1;
+      public static final double P = 0.001;
+      public static final double Ff = 0.01;
     }
   }
 
@@ -22,13 +22,14 @@ public abstract class ShooterConstants {
     public static final boolean INVERTED = false;
 
     public static class MotorPid {
-      public static final double P = -1;
-      public static final double Ff = -1;
+      public static final double P = 0.001;
+      public static final double Ff = 0.01;
     }
   }
 
   public enum ShooterVelocity {
-    OFF(0);
+    OFF(0),
+    BLOOP(1000);
 
     private double velocity;
 

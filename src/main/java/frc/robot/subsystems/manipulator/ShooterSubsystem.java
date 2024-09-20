@@ -76,12 +76,14 @@ public class ShooterSubsystem extends SubsystemBase {
     MotorConfig.fromMotorConstants(
             upperShooterMotor, upperShooterMotorEncoder, upperShooterMotorConfig)
         .configureMotor()
+        .configurePid()
         .configureEncoder()
         .burnFlash();
 
     MotorConfig.fromMotorConstants(
             lowerShooterMotor, lowerShooterMotorEncoder, lowerShooterMotorConfig)
         .configureMotor()
+        .configurePid()
         .configureEncoder()
         .burnFlash();
   }
@@ -128,6 +130,11 @@ public class ShooterSubsystem extends SubsystemBase {
     lowerShooterMotor
         .getPIDController()
         .setReference(velocity.getVelocity(), CANSparkMax.ControlType.kVelocity);
+  }
+
+  public void set(double speed) {
+    upperShooterMotor.set(speed);
+    lowerShooterMotor.set(speed);
   }
 
   /** Stop both shooter motors. */

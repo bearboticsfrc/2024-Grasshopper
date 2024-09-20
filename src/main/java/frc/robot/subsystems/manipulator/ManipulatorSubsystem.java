@@ -6,7 +6,6 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.constants.manipulator.ElevatorConstants;
 import frc.robot.constants.manipulator.ElevatorConstants.ElevatorPosition;
 import frc.robot.constants.manipulator.IntakeConstants.IntakeVelocity;
-import frc.robot.constants.manipulator.ShooterConstants.ShooterVelocity;
 
 public class ManipulatorSubsystem extends SubsystemBase {
   private final IntakeSubsystem intake;
@@ -30,9 +29,12 @@ public class ManipulatorSubsystem extends SubsystemBase {
    */
   public Command getElevatorHomeCommand() {
     return Commands.sequence(
-        elevator.runOnce(() -> elevator.set(ElevatorConstants.HOMING_SPEED)),
-        Commands.waitUntil(elevator::isAtLowerLimit),
-        elevator.runOnce(elevator::stopMotor));
+            elevator.runOnce(elevator::maxEncoder),
+            elevator.runOnce(() -> elevator.set(ElevatorConstants.HOMING_SPEED)),
+            Commands.waitUntil(elevator::isAtLowerLimit),
+            elevator.runOnce(elevator::stopMotor),
+            elevator.runOnce(elevator::tareEncoder))
+        .withName("Home Elevator");
   }
 
   /**
@@ -44,10 +46,10 @@ public class ManipulatorSubsystem extends SubsystemBase {
     return Commands.either(
         Commands.idle(),
         Commands.sequence(
-            intake.runOnce(() -> intake.set(IntakeVelocity.HALF)),
-            Commands.waitUntil(intake::isNoteInRoller),
-            intake.runOnce(intake::stop)),
-        intake::isNoteInRoller);
+            intake.runOnce(() -> intake.set(IntakeVelocity.FULL)),
+            Commands.waitUntil(intake::isNoteInShooter),
+            intake.runOnce(intake::stopMotor)),
+        intake::isNoteInShooter);
   }
 
   /**
@@ -58,6 +60,18 @@ public class ManipulatorSubsystem extends SubsystemBase {
    */
   public Command getIntakeSetCommand(IntakeVelocity velocity) {
     return intake.runOnce(() -> intake.set(velocity));
+  }
+
+  public Command getIntakeStopCommand() {
+    return intake.runOnce(() -> intake.stopMotor());
+  }
+
+  public Command getShooterStopCommand() {
+    return shooter.runOnce(() -> shooter.stopMotor());
+  }
+
+  public Command getElevatorStopCommand() {
+    return elevator.runOnce(() -> elevator.stopMotor());
   }
 
   /**
@@ -73,14 +87,26 @@ public class ManipulatorSubsystem extends SubsystemBase {
   }
 
   /**
+   * Get the elevator subsytem set command
+   *
+   * @param position The position to set the elevator to
+   * @return The command
+   */
+  public Command getElevatorSetCommand(double speed) {
+    return elevator.runOnce(() -> elevator.set(speed));
+  }
+
+  /**
    * Get the shooter subsytem set command
    *
    * @param velocity The velocity to set the shooter to
    * @return The command
    */
-  public Command getShooterSetCommand(ShooterVelocity velocity) {
+  public Command getShooterSetCommand(double velocity) {
     return Commands.sequence(
         shooter.runOnce(() -> shooter.set(velocity)),
-        Commands.waitUntil(shooter::atTargetVelocity));
+        Commands.waitSeconds(1.5),
+        getIntakeSetCommand(IntakeVelocity.FULL));
+    // Commands.waitUntil(shooter::atTargetVelocity));
   }
 }

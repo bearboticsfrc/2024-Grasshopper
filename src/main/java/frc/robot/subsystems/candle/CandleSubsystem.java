@@ -1,31 +1,28 @@
 package frc.robot.subsystems.candle;
 
-import com.ctre.phoenix.led.CANdle;
 import com.ctre.phoenix.led.Animation;
-import com.ctre.phoenix.led.LarsonAnimation;
-import com.ctre.phoenix.led.StrobeAnimation;
+import com.ctre.phoenix.led.CANdle;
 import com.ctre.phoenix.led.CANdle.VBatOutputMode;
-import com.ctre.phoenix.led.LarsonAnimation.BounceMode;
 import com.ctre.phoenix.led.CANdleConfiguration;
+import com.ctre.phoenix.led.LarsonAnimation;
+import com.ctre.phoenix.led.LarsonAnimation.BounceMode;
+import com.ctre.phoenix.led.StrobeAnimation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.bearbotics.fms.AllianceColor;
 import frc.bearbotics.fms.AllianceReadyListener;
-import edu.wpi.first.wpilibj.DriverStation.Alliance;
-
 
 public class CandleSubsystem extends SubsystemBase implements AllianceReadyListener {
-    private final int CANDLE_PORT = -1;
-    final private CANdle LEDS = new CANdle(CANDLE_PORT);
-    final private int animationSlot = 0;
-    private Color currentColor;
-    //TODO: set theses values
-    private int ledsSize;
-    private int startIndex;
-
+  private final int CANDLE_PORT = -1;
+  private final CANdle LEDS = new CANdle(CANDLE_PORT);
+  private final int animationSlot = 0;
+  private Color currentColor;
+  // TODO: set this value
+  private int ledsSize;
 
   /**
-   * Initializes a new instance of the CandleSubsystem, configuring the CANdle device with default
+   * Initializes a new instance of the Candle Subsystem, configuring the CANdle device with default
    * settings and preparing the LED segment for control.
    */
   public CandleSubsystem() {
@@ -49,7 +46,6 @@ public class CandleSubsystem extends SubsystemBase implements AllianceReadyListe
    * off).
    */
 
-
   /**
    * Clears the animations and sets the color of a specific LED segment to black.
    *
@@ -60,21 +56,14 @@ public class CandleSubsystem extends SubsystemBase implements AllianceReadyListe
     setColor(Color.kBlack);
   }
 
-  
-
-  /**
-   * Sets the color of the entire LED strip.
-   */
+  /** Sets the color of the entire LED strip. */
   public void setColor(Color color) {
     currentColor = color;
     LEDS.setLEDs(
         (int) (currentColor.red * 255),
         (int) (currentColor.green * 255),
-        (int) (currentColor.blue * 255)
-        );
+        (int) (currentColor.blue * 255));
   }
-
-  
 
   /**
    * Sets a specific animation pattern with a specified color for the entire LED strip. Supports
@@ -102,12 +91,10 @@ public class CandleSubsystem extends SubsystemBase implements AllianceReadyListe
       case STROBE:
         setStrobeAnimation(color, 10);
         break;
-      case LARSON:
-        setLarsonAnimation(color, 0.001);
-        break;
     }
   }
-  public void setLarsonAnimation(Color color,double speed) {
+
+  public void setLarsonAnimation(Color color, double speed) {
     currentColor = color;
 
     LarsonAnimation animation =
@@ -119,12 +106,11 @@ public class CandleSubsystem extends SubsystemBase implements AllianceReadyListe
             speed,
             ledsSize,
             BounceMode.Back,
-            startIndex
-            );
+            0);
 
     setAnimation(animation, animationSlot);
   }
-   /**
+  /**
    * Applies a strobe animation to this LED segment.
    *
    * @param color The color of the strobe effect.
@@ -140,8 +126,7 @@ public class CandleSubsystem extends SubsystemBase implements AllianceReadyListe
             (int) (color.blue * 255),
             0,
             speed,
-            ledsSize
-            );
+            ledsSize);
 
     setAnimation(animation, animationSlot);
   }
@@ -154,8 +139,8 @@ public class CandleSubsystem extends SubsystemBase implements AllianceReadyListe
     Color color = getAllianceColor(AllianceColor.isRedAlliance());
 
     setColor(color);
-    
   }
+
   private void setAnimation(Animation animation, int slot) {
     LEDS.animate(animation, animationSlot);
   }
@@ -164,16 +149,13 @@ public class CandleSubsystem extends SubsystemBase implements AllianceReadyListe
     return isRedAlliance ? Color.kRed : Color.kBlue;
   }
 
-
-
   public enum CandlePattern {
     /** A strobing effect, rapidly blinking the LEDs on and off. */
     STROBE,
-  
+
     /**
      * A "Larson scanner" (or Knight Rider) effect, creating a moving dot back and forth across the
      * LEDs.
      */
-    LARSON;
   }
 }

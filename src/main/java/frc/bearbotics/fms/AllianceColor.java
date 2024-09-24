@@ -1,6 +1,5 @@
 package frc.bearbotics.fms;
 
-import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import java.util.ArrayList;
 import java.util.List;
@@ -31,7 +30,6 @@ public class AllianceColor {
    */
   public static void setAllianceColor(Alliance newAlliance) {
     if (alliance == null || alliance != newAlliance) {
-      DataLogManager.log("Setting new alliance to -> " + newAlliance);
       alliance = newAlliance;
       notifyListeners();
     }

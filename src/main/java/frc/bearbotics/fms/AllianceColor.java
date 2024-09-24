@@ -1,5 +1,6 @@
 package frc.bearbotics.fms;
 
+import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import java.util.ArrayList;
 import java.util.List;
@@ -30,6 +31,7 @@ public class AllianceColor {
    */
   public static void setAllianceColor(Alliance newAlliance) {
     if (alliance == null || alliance != newAlliance) {
+      DataLogManager.log("Setting new alliance to -> " + newAlliance);
       alliance = newAlliance;
       notifyListeners();
     }
@@ -39,18 +41,18 @@ public class AllianceColor {
    * Notifies all registered listeners about the current alliance. This method is called internally
    * whenever the alliance is set or changed.
    */
-  public static void notifyListeners() {
+  private static void notifyListeners() {
     for (AllianceReadyListener listener : listeners) {
       listener.updateAlliance(alliance);
     }
   }
 
   /**
-   * Checks if the current alliance is Red.
+   * Get the current {@link Alliance}.
    *
-   * @return true if the current alliance is Red, false otherwise.
+   * @return The alliance
    */
-  public static boolean isRedAlliance() {
-    return alliance == Alliance.Red;
+  public static Alliance getAlliance() {
+    return alliance;
   }
 }

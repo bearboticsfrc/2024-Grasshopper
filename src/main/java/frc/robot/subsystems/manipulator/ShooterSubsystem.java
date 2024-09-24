@@ -124,6 +124,8 @@ public class ShooterSubsystem extends SubsystemBase {
    * @param velocity The desired velocity for the shooter motor.
    */
   public void set(ShooterVelocity velocity) {
+    targetVelocity = velocity.getVelocity();
+
     upperShooterMotor
         .getPIDController()
         .setReference(velocity.getVelocity(), CANSparkMax.ControlType.kVelocity);

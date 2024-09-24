@@ -5,7 +5,9 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.constants.manipulator.ElevatorConstants;
 import frc.robot.constants.manipulator.ElevatorConstants.ElevatorPosition;
+import frc.robot.constants.manipulator.IntakeConstants;
 import frc.robot.constants.manipulator.IntakeConstants.IntakeVelocity;
+import frc.robot.constants.manipulator.ShooterConstants.ShooterVelocity;
 
 public class ManipulatorSubsystem extends SubsystemBase {
   private final IntakeSubsystem intake;
@@ -48,6 +50,7 @@ public class ManipulatorSubsystem extends SubsystemBase {
         Commands.sequence(
             intake.runOnce(() -> intake.set(IntakeVelocity.FULL)),
             Commands.waitUntil(intake::isNoteInShooter),
+            Commands.waitSeconds(IntakeConstants.STOP_DELAY),
             intake.runOnce(intake::stopMotor)),
         intake::isNoteInShooter);
   }
@@ -102,11 +105,10 @@ public class ManipulatorSubsystem extends SubsystemBase {
    * @param velocity The velocity to set the shooter to
    * @return The command
    */
-  public Command getShooterSetCommand(double velocity) {
+  public Command getShooterSetCommand(ShooterVelocity velocity) {
     return Commands.sequence(
         shooter.runOnce(() -> shooter.set(velocity)),
-        Commands.waitSeconds(1.5),
+        Commands.waitUntil(shooter::atTargetVelocity),
         getIntakeSetCommand(IntakeVelocity.FULL));
-    // Commands.waitUntil(shooter::atTargetVelocity));
   }
 }

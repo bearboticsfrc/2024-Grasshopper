@@ -4,6 +4,9 @@ public abstract class IntakeConstants {
   public static final int ROLLER_BEAM_BREAK_CHANNEL = 0;
   public static final int SHOOTER_BEAM_BREAK_CHANNEL = 1;
 
+  // Delay to wait until we stop the intake motors once we trip the beam-break in our intake cycle
+  public static final double STOP_DELAY = 0.05;
+
   public static class IntakeMotor {
     public static final String NAME = "Intake Motor";
     public static final int MOTOR_PORT = 5;

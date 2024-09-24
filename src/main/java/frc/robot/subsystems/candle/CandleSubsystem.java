@@ -14,11 +14,11 @@ import frc.bearbotics.fms.AllianceColor;
 import frc.bearbotics.fms.AllianceReadyListener;
 
 public class CandleSubsystem extends SubsystemBase implements AllianceReadyListener {
+  // TODO: set all of these values
   private final int CANDLE_PORT = -1;
   private final CANdle LEDS = new CANdle(CANDLE_PORT);
   private final int animationSlot = 0;
   private Color currentColor;
-  // TODO: set this value
   private int ledsSize;
 
   /**
@@ -66,17 +66,6 @@ public class CandleSubsystem extends SubsystemBase implements AllianceReadyListe
   }
 
   /**
-   * Sets a specific animation pattern with a specified color for the entire LED strip. Supports
-   * strobe and larson patterns.
-   *
-   * @param pattern The pattern to display on the LEDs.
-   * @param color The color to use for the pattern.
-   */
-  public void setPattern(CandlePattern pattern, Color color) {
-    setPattern(pattern, color, LEDS);
-  }
-
-  /**
    * Sets a specific animation pattern with a specified color for specified segment. Supports strobe
    * and larson patterns.
    *
@@ -84,13 +73,15 @@ public class CandleSubsystem extends SubsystemBase implements AllianceReadyListe
    * @param color The color to use for the pattern.
    * @param segment The segment to set the pattern to.
    */
-  public void setPattern(CandlePattern pattern, Color color, CANdle segment) {
+  public void setPattern(CandlePattern pattern, Color color) {
     clearSegment(LEDS);
 
     switch (pattern) {
       case STROBE:
         setStrobeAnimation(color, 10);
         break;
+      case LARSON:
+        setLarsonAnimation(color, 0.001);
     }
   }
 
@@ -157,5 +148,6 @@ public class CandleSubsystem extends SubsystemBase implements AllianceReadyListe
      * A "Larson scanner" (or Knight Rider) effect, creating a moving dot back and forth across the
      * LEDs.
      */
+    LARSON;
   }
 }

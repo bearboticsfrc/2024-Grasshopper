@@ -22,8 +22,6 @@ public abstract class ElevatorConstants {
   }
 
   public enum ElevatorPosition {
-    LINE(10),
-    AMP(43),
     HOME(0);
 
     private double position;

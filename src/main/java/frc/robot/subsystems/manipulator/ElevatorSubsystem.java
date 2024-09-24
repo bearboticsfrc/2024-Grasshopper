@@ -27,7 +27,7 @@ public class ElevatorSubsystem extends SubsystemBase {
   private final DigitalInput upperLimitSwitch =
       new DigitalInput(ElevatorConstants.UPPER_LIMIT_SWITCH_CHANNEL);
 
-  private ElevatorPosition targetPosition = ElevatorPosition.HOME;
+  private double targetPosition;
 
   public ElevatorSubsystem() {
     configureMotors();
@@ -101,7 +101,7 @@ public class ElevatorSubsystem extends SubsystemBase {
    * @param position An enum representing the elevator position.
    */
   public void set(ElevatorPosition position) {
-    targetPosition = position;
+    targetPosition = position.getPosition();
 
     elevatorMotor
         .getPIDController()
@@ -123,7 +123,7 @@ public class ElevatorSubsystem extends SubsystemBase {
   }
 
   /**
-   * Whether the lowwe limit switch is active, indicating the elevator motor is at it's lowest
+   * Whether the lower limit switch is active, indicating the elevator motor is at it's lowest
    * position
    *
    * @return True if the limit switch is active, otherwise false
@@ -148,7 +148,7 @@ public class ElevatorSubsystem extends SubsystemBase {
    * @return True if the arm elevator motor is at its target position, false otherwise
    */
   public boolean atTargetPosition() {
-    return Math.abs(targetPosition.getPosition() - elevatorMotorEncoder.getPosition())
+    return Math.abs(targetPosition - elevatorMotorEncoder.getPosition())
         < ElevatorConstants.POSITION_TOLERANCE;
   }
 

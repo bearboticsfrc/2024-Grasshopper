@@ -20,9 +20,6 @@ public abstract class IntakeConstants {
   public enum IntakeVelocity {
     REVERSE(-1),
     OFF(0),
-    TENTH(0.1),
-    QUARTER(0.25),
-    HALF(0.5),
     FULL(1);
 
     private final double speed;

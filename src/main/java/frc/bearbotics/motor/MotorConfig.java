@@ -13,6 +13,7 @@ import frc.bearbotics.util.RevUtil;
 
 /** Configuration class for motor parameters, including feedback sensors and builders. */
 public class MotorConfig {
+  private final double BURN_FLASH_DELAY = 0.25;
 
   private StringLogEntry logEntry =
       new StringLogEntry(DataLogManager.getLog(), "MotorConfig/Config");
@@ -52,6 +53,10 @@ public class MotorConfig {
    * @return This MotorConfig instance for method chaining.
    */
   public MotorConfig configureMotor() {
+    RevUtil.checkRevError(
+        motor.restoreFactoryDefaults(),
+        "[MotorConfig.configureMotor]: Failed to reset factory defaults");
+
     motor.setInverted(motorBuilder.isMotorInverted());
 
     String motorDescription = motorBuilder.getName();
@@ -144,19 +149,19 @@ public class MotorConfig {
       RevUtil.checkRevError(
           ((RelativeEncoder) motorEncoder).setPosition(initialPosition),
           String.format(
-              "[MotorCongig.configureEncoder]: Failed to set motor encoder position to %s",
+              "[MotorConfig.configureEncoder]: Failed to set motor encoder position to %s",
               initialPosition));
       RevUtil.checkRevError(
           ((RelativeEncoder) motorEncoder)
               .setPositionConversionFactor(motorBuilder.getPositionConversionFactor()),
           String.format(
-              "[MotorCongig.configureEncoder]: Failed to set position conversion factor to %s",
+              "[MotorConfig.configureEncoder]: Failed to set position conversion factor to %s",
               motorBuilder.getPositionConversionFactor()));
       RevUtil.checkRevError(
           ((RelativeEncoder) motorEncoder)
               .setVelocityConversionFactor(motorBuilder.getVelocityConversionFactor()),
           String.format(
-              "[MotorCongig.configureEncoder]: Failed to set velocity conversion factor to %s",
+              "[MotorConfig.configureEncoder]: Failed to set velocity conversion factor to %s",
               motorBuilder.getVelocityConversionFactor()));
     } else if (motorEncoder instanceof AbsoluteEncoder) {
       RevUtil.checkRevError(
@@ -165,13 +170,13 @@ public class MotorConfig {
           ((AbsoluteEncoder) motorEncoder)
               .setPositionConversionFactor(motorBuilder.getPositionConversionFactor()),
           String.format(
-              "[MotorCongig.configureEncoder]: Failed to set position conversion factor to %s",
+              "[MotorConfig.configureEncoder]: Failed to set position conversion factor to %s",
               motorBuilder.getPositionConversionFactor()));
       RevUtil.checkRevError(
           ((AbsoluteEncoder) motorEncoder)
               .setVelocityConversionFactor(motorBuilder.getVelocityConversionFactor()),
           String.format(
-              "[MotorCongig.configureEncoder]: Failed to set velocity conversion factor to %s",
+              "[MotorConfig.configureEncoder]: Failed to set velocity conversion factor to %s",
               motorBuilder.getVelocityConversionFactor()));
     } else if (motorEncoder instanceof SparkAbsoluteEncoder) {
       ((SparkAbsoluteEncoder) motorEncoder).setInverted(motorBuilder.isEncoderInverted());
@@ -179,13 +184,13 @@ public class MotorConfig {
           ((SparkAbsoluteEncoder) motorEncoder)
               .setPositionConversionFactor(motorBuilder.getPositionConversionFactor()),
           String.format(
-              "[MotorCongig.configureEncoder]: Failed to set position conversion factor to %s",
+              "[MotorConfig.configureEncoder]: Failed to set position conversion factor to %s",
               motorBuilder.getPositionConversionFactor()));
       RevUtil.checkRevError(
           ((SparkAbsoluteEncoder) motorEncoder)
               .setVelocityConversionFactor(motorBuilder.getVelocityConversionFactor()),
           String.format(
-              "[MotorCongig.configureEncoder]: Failed to set velocity conversion factor to %s",
+              "[MotorConfig.configureEncoder]: Failed to set velocity conversion factor to %s",
               motorBuilder.getVelocityConversionFactor()));
     }
 
@@ -200,7 +205,7 @@ public class MotorConfig {
       message += String.format("Set feedback device -> %s\n", motorEncoder.getClass());
       RevUtil.checkRevError(
           motor.getPIDController().setFeedbackDevice(motorEncoder),
-          "[MotorCongig.configureEncoder]: Failed to set PID feedback device");
+          "[MotorConfig.configureEncoder]: Failed to set PID feedback device");
     }
 
     logEntry.append(message);
@@ -333,13 +338,13 @@ public class MotorConfig {
   public void burnFlash() {
     String message =
         String.format(
-            "[MotorConfig.burnFlash] %s:\n\tBurn flash delay (seconds) -> 0.25\n",
-            motorBuilder.getName(), 0.25);
+            "[MotorConfig.burnFlash] %s:\n\tBurn flash delay (seconds) -> %s\n",
+            motorBuilder.getName(), BURN_FLASH_DELAY);
     logEntry.append(message);
 
-    Timer.delay(0.25);
+    Timer.delay(BURN_FLASH_DELAY);
     RevUtil.checkRevError(motor.burnFlash(), "[MotorConfig.burnFlash]: Failed to burn flash");
-    Timer.delay(0.25);
+    Timer.delay(BURN_FLASH_DELAY);
     // Burn parameters onto motor flash
     // might not work, needs a delay after setting values
   }

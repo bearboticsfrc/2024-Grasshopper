@@ -1,9 +1,9 @@
 # 2024 Crescendo
 ## Bearbotic's 2024 off-season robot: *Grasshopper*.
 
-Bearbotic's custom package: [here](https://github.com/bearboticsfrc/2024-Tempo/tree/main/src/main/java/frc/bearbotics)
+Bearbotic's custom package: [here](src/main/java/frc/bearbotics)
 
-The robot code: [here](https://github.com/bearboticsfrc/2024-Tempo/tree/main/src/main/java/frc/robot)
+The robot code: [here](src/main/java/frc/robot)
 
 # Social Media
 Check us out here:

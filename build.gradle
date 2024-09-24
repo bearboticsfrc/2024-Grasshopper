@@ -1,6 +1,6 @@
 plugins {
     id "java"
-    id "edu.wpi.first.GradleRIO" version "2024.3.1"
+    id "edu.wpi.first.GradleRIO" version "2024.3.2"
     id "com.diffplug.spotless" version "6.11.0"
 }
 
@@ -130,6 +130,7 @@ task putGitInfo(type: Exec) {
 
 //force this task to run before jar packaging
 jar.dependsOn putGitInfo
+
 // Configure jar and deploy tasks
 deployArtifact.jarTask = jar
 wpi.java.configureExecutableTasks(jar)

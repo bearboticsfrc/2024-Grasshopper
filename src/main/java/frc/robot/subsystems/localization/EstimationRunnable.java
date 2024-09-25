@@ -72,11 +72,12 @@ public class EstimationRunnable implements Runnable {
       double individualDist = individualZ / Math.tan(Math.toRadians(i.getPitch()));
       dist += (individualDist);
       yaw += tagPose.getRotation().getZ() + i.getYaw();
-      y += tagPose.getX() - (individualDist / Math.asin(Math.toRadians(i.getYaw())));
-      x += tagPose.getY() - (individualDist / Math.cos( Math.toRadians(i.getYaw())));
+      y += tagPose.getX() + (individualDist / Math.asin(Math.toRadians(i.getYaw())));
+      x += tagPose.getY() + (individualDist / Math.cos( Math.toRadians(i.getYaw())));
     
     }
     dist /= count;
+    System.out.println("distance"+dist);
     y /= count;
     x /= count;
     yaw /= count;

@@ -22,7 +22,7 @@ public class VisionConstants {
       MatBuilder.fill(Nat.N3(), Nat.N1(), 1, 1, 1 * Math.PI);
 
   public static final double APRILTAG_AMBIGUITY_THRESHOLD = 0.09;
-  public static final double APRILTAG_CULL_DISTANCE = 4.0;
+  public static final double APRILTAG_CULL_DISTANCE = 3;
 
   public enum TAG {
     BLUE_SOURCE_RIGHT(1),

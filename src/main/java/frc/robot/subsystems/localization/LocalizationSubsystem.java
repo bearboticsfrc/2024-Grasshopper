@@ -11,12 +11,12 @@ import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.constants.RobotConstants;
 import frc.robot.constants.VisionConstants;
-import frc.robot.subsystems.SwerveSubsystem;
+import frc.robot.subsystems.CommandSwerveDrivetrain;
 import org.photonvision.PhotonCamera;
 
 public class LocalizationSubsystem extends SubsystemBase {
   EstimationRunnable estimatorRunnable;
-  private SwerveSubsystem swerve;
+  private CommandSwerveDrivetrain swerve;
 
   private LocalizingCamera camera =
       new LocalizingCamera(
@@ -24,8 +24,9 @@ public class LocalizationSubsystem extends SubsystemBase {
 
   private StructPublisher<Pose2d> fusedPosePublisher;
   private DoublePublisher headingPublisher;
+  private DoublePublisher distancePublisher;
 
-  public LocalizationSubsystem(SwerveSubsystem swerve) {
+  public LocalizationSubsystem(CommandSwerveDrivetrain swerve) {
     this.swerve = swerve;
 
     ShuffleboardTab tab = Shuffleboard.getTab("Vision");
@@ -50,14 +51,14 @@ public class LocalizationSubsystem extends SubsystemBase {
    * available, it is used to update the robot's pose in the DriveSubsystem.
    */
   public void estimatorChecker() {
-    CameraTransformResultantIdentity robotPose = this.estimatorRunnable.getLatestPose();
+    CameraPoseResultantIdentity robotPose = this.estimatorRunnable.getLatestPose();
 
     if (robotPose == null) {
       return;
     }
     Pose2d visionPose = robotPose.getPose2d(VisionConstants.CAMERA_TO_ROBOT);
 
-    swerve.addVisionMeasurment(visionPose, robotPose.getTimestampSeconds());
+    swerve.addVisionMeasurement(visionPose, robotPose.getTimestampSeconds());
   }
 
   @Override

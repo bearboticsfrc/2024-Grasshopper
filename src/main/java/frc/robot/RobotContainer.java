@@ -5,6 +5,10 @@
 package frc.robot;
 
 import com.ctre.phoenix6.mechanisms.swerve.SwerveRequest;
+import edu.wpi.first.apriltag.AprilTagFieldLayout;
+import edu.wpi.first.apriltag.AprilTagFieldLayout.OriginPosition;
+import edu.wpi.first.apriltag.AprilTagFields;
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -14,15 +18,16 @@ import frc.bearbotics.util.ProcessedJoystick.JoystickAxis;
 import frc.bearbotics.util.ProcessedJoystick.ThrottleProfile;
 import frc.robot.constants.DriveConstants;
 import frc.robot.constants.RobotConstants;
-import frc.robot.constants.manipulator.ElevatorConstants.ElevatorPosition;
-import frc.robot.constants.manipulator.IntakeConstants.IntakeVelocity;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
+import frc.robot.subsystems.localization.LocalizationSubsystem;
 import frc.robot.subsystems.manipulator.ManipulatorSubsystem;
 
 public class RobotContainer {
   /* Our drivetrain */
   private final CommandSwerveDrivetrain drivetrain = TunerConstants.DriveTrain;
+
+  private final LocalizationSubsystem localization = new LocalizationSubsystem(drivetrain);
 
   /* Our manipulator */
   private final ManipulatorSubsystem manipulatorSubsystem = new ManipulatorSubsystem();
@@ -36,13 +41,33 @@ public class RobotContainer {
   private ProcessedJoystick processedJoystick =
       new ProcessedJoystick(driverJoystick, this::getThrottleProfile);
 
+  private AprilTagFieldLayout layout = AprilTagFields.k2024Crescendo.loadAprilTagLayoutField();
+
   public RobotContainer() {
+    layout.setOrigin(OriginPosition.kBlueAllianceWallRightSide);
+
     configureBindings();
     setupShuffleboardTab(RobotConstants.COMPETITION_TAB);
   }
 
   private void setupShuffleboardTab(ShuffleboardTab shuffleboardTab) {
     shuffleboardTab.add("Home Elevator", manipulatorSubsystem.getElevatorHomeCommand());
+    shuffleboardTab.addDouble("Distance to Speaker", this::getDistanceToSpeaker);
+  }
+
+  private double getDistanceToSpeaker() {
+    return getDistanceToPose(drivetrain.getPose(), layout.getTagPose(4).get().toPose2d());
+  }
+
+  /**
+   * Calculates the straight-line distance between two poses on the field.
+   *
+   * @param fromPose The starting pose.
+   * @param toPose The target pose.
+   * @return The distance between the two poses in meters.
+   */
+  public static double getDistanceToPose(Pose2d fromPose, Pose2d toPose) {
+    return Math.hypot(fromPose.getX() - toPose.getX(), fromPose.getY() - toPose.getY());
   }
 
   /** Configure the joystick bindings for the robot. */
@@ -61,28 +86,6 @@ public class RobotContainer {
         .rightStick()
         .whileTrue(Commands.runOnce(() -> setThrottleProfile(ThrottleProfile.TURTLE)))
         .onFalse(Commands.runOnce(() -> setThrottleProfile(ThrottleProfile.NORMAL)));
-
-    driverJoystick
-        .leftBumper()
-        .whileTrue(manipulatorSubsystem.getIntakeCommand())
-        .onFalse(manipulatorSubsystem.getIntakeStopCommand());
-
-    driverJoystick
-        .rightBumper()
-        .whileTrue(manipulatorSubsystem.getIntakeSetCommand(IntakeVelocity.REVERSE))
-        .onFalse(manipulatorSubsystem.getIntakeStopCommand());
-
-    driverJoystick
-        .a()
-        .whileTrue(manipulatorSubsystem.getShooterSetCommand(0.095))
-        .onFalse(
-            manipulatorSubsystem
-                .getIntakeStopCommand()
-                .andThen(manipulatorSubsystem.getShooterStopCommand()));
-
-    driverJoystick.y().whileTrue(manipulatorSubsystem.getElevatorSetCommand(ElevatorPosition.LINE));
-    driverJoystick.b().whileTrue(manipulatorSubsystem.getElevatorSetCommand(ElevatorPosition.AMP));
-    driverJoystick.x().whileTrue(manipulatorSubsystem.getElevatorSetCommand(ElevatorPosition.HOME));
   }
 
   /**

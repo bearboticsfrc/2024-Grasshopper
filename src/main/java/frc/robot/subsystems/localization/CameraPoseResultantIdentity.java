@@ -8,7 +8,7 @@ import edu.wpi.first.math.geometry.Transform3d;
  * this is a necessary data type so we dont depart quantities of a vector
  * you could put it in a vector data type but I want names so this is cleaner
  */
-public class CameraTransformResultantIdentity {
+public class CameraPoseResultantIdentity {
 
   private double dist;
   private double x;
@@ -20,12 +20,11 @@ public class CameraTransformResultantIdentity {
   /*
    * constructs a new camera transform resultant identity
    */
-  public CameraTransformResultantIdentity(
-      double dist, double x, double y, double z, double yaw, double timestamp) {
+  public CameraPoseResultantIdentity(
+      double dist, double y, double x, double yaw, double timestamp) {
     this.dist = dist;
     this.x = x;
     this.y = y;
-    this.z = z;
     this.rot = rot;
     this.timestamp = timestamp;
   }
@@ -36,10 +35,6 @@ public class CameraTransformResultantIdentity {
 
   public double getY() {
     return y;
-  }
-
-  public double getZ() {
-    return z;
   }
 
   public double getRot() {

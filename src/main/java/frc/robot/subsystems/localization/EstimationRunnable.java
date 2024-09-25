@@ -3,6 +3,7 @@ package frc.robot.subsystems.localization;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFieldLayout.OriginPosition;
 import edu.wpi.first.apriltag.AprilTagFields;
+import edu.wpi.first.math.geometry.Pose3d;
 import frc.robot.constants.VisionConstants;
 import java.util.concurrent.atomic.AtomicReference;
 import org.photonvision.PhotonCamera;
@@ -12,7 +13,7 @@ import org.photonvision.targeting.PhotonTrackedTarget;
 public class EstimationRunnable implements Runnable {
   private final PhotonCamera photonCamera;
   private final AprilTagFieldLayout layout;
-  private final AtomicReference<CameraTransformResultantIdentity> atomicEstimatedCameraTransform =
+  private final AtomicReference<CameraPoseResultantIdentity> atomicEstimatedCameraTransform =
       new AtomicReference<>();
 
   public EstimationRunnable(String name, LocalizingCamera camera) {
@@ -52,37 +53,39 @@ public class EstimationRunnable implements Runnable {
     if (!layout.getTagPose(target.getFiducialId()).isPresent()) {
       return false;
     }
-    return ((layout.getTagPose(target.getFiducialId()).get().getZ()) / Math.tan(pitch))
-        > VisionConstants.APRILTAG_CULL_DISTANCE;
+    return ((layout.getTagPose(target.getFiducialId()).get().getZ()) / Math.atan(Math.toRadians(pitch)))
+        < VisionConstants.APRILTAG_CULL_DISTANCE;
   }
 
-  public CameraTransformResultantIdentity getTransform(PhotonPipelineResult result) {
+  public CameraPoseResultantIdentity getTransform(PhotonPipelineResult result) {
     int count = 0;
     double dist = 0;
-    double x = 0;
     double y = 0;
-    double z = 0;
+    double x = 0;
+
     double yaw = 0;
     for (PhotonTrackedTarget i : (result.targets)) {
-      double individualZ = layout.getTagPose(i.getFiducialId()).get().getZ();
-      z += individualZ;
+      Pose3d tagPose = layout.getTagPose(i.getFiducialId()).get();
+      double individualZ = tagPose.getZ();
+
       count += 1;
-      double individualDist = Math.tan(individualZ / i.getPitch());
+      double individualDist = individualZ / Math.tan(Math.toRadians(i.getPitch()));
       dist += (individualDist);
-      yaw += i.getYaw();
-      x += (individualDist / Math.sin(individualDist / i.getYaw()));
-      y += (individualDist / Math.cos(individualDist / i.getYaw()));
+      yaw += tagPose.getRotation().getZ() + i.getYaw();
+      y += tagPose.getX() - (individualDist / Math.asin(Math.toRadians(i.getYaw())));
+      x += tagPose.getY() - (individualDist / Math.cos( Math.toRadians(i.getYaw())));
+    
     }
     dist /= count;
-    x /= count;
     y /= count;
-    z /= count;
+    x /= count;
     yaw /= count;
     double time = result.getTimestampSeconds();
-    return new CameraTransformResultantIdentity(dist, x, y, z, yaw, time);
+ 
+    return new CameraPoseResultantIdentity(dist, y, x, yaw, time);
   }
 
-  public CameraTransformResultantIdentity getLatestPose() {
+  public CameraPoseResultantIdentity getLatestPose() {
     return this.atomicEstimatedCameraTransform.get();
   }
 }

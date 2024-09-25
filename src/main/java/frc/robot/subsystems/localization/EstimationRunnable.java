@@ -78,6 +78,11 @@ public class EstimationRunnable implements Runnable {
     y /= count;
     z /= count;
     yaw /= count;
-    return new CameraTransformResultantIdentity(dist, x, y, z, yaw);
+    double time = result.getTimestampSeconds();
+    return new CameraTransformResultantIdentity(dist, x, y, z, yaw, time);
+  }
+
+  public CameraTransformResultantIdentity getLatestPose() {
+    return this.atomicEstimatedCameraTransform.get();
   }
 }

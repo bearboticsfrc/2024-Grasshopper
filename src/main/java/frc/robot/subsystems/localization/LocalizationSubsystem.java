@@ -44,6 +44,8 @@ public class LocalizationSubsystem extends SubsystemBase {
         NetworkTableInstance.getDefault().getDoubleTopic("/vision/heading").publish();
 
     tab.addString("Pose", () -> StringFormatting.poseToString(swerve.getPose()));
+    tab.addString(
+        "Distance", () -> Double.toString(this.estimatorRunnable.getLatestPose().getDistance()));
   }
 
   /**

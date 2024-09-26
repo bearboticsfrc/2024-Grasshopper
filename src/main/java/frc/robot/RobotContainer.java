@@ -52,7 +52,6 @@ public class RobotContainer {
 
   private void setupShuffleboardTab(ShuffleboardTab shuffleboardTab) {
     shuffleboardTab.add("Home Elevator", manipulatorSubsystem.getElevatorHomeCommand());
-    shuffleboardTab.addDouble("Distance to Speaker", this::getDistanceToSpeaker);
   }
 
   private double getDistanceToSpeaker() {

@@ -45,6 +45,10 @@ public class CameraPoseResultantIdentity {
     return timestamp;
   }
 
+  public double getDistance() {
+    return dist;
+  }
+
   public Pose2d getPose2d(Transform3d robotToCameraTransform) {
     return new Pose2d(
         (x + robotToCameraTransform.getX()),

@@ -53,7 +53,8 @@ public class EstimationRunnable implements Runnable {
     if (!layout.getTagPose(target.getFiducialId()).isPresent()) {
       return false;
     }
-    return ((layout.getTagPose(target.getFiducialId()).get().getZ()) / Math.atan(Math.toRadians(pitch)))
+    return ((layout.getTagPose(target.getFiducialId()).get().getZ())
+            / Math.tan(Math.toRadians(pitch + 27)))
         < VisionConstants.APRILTAG_CULL_DISTANCE;
   }
 
@@ -69,20 +70,19 @@ public class EstimationRunnable implements Runnable {
       double individualZ = tagPose.getZ();
 
       count += 1;
-      double individualDist = individualZ / Math.tan(Math.toRadians(i.getPitch()));
+      double individualDist = individualZ / Math.tan(Math.toRadians(i.getPitch() + 27));
       dist += (individualDist);
       yaw += tagPose.getRotation().getZ() + i.getYaw();
       y += tagPose.getX() + (individualDist / Math.asin(Math.toRadians(i.getYaw())));
-      x += tagPose.getY() + (individualDist / Math.cos( Math.toRadians(i.getYaw())));
-    
+      x += tagPose.getY() + (individualDist / Math.cos(Math.toRadians(i.getYaw())));
     }
     dist /= count;
-    System.out.println("distance"+dist);
+    System.out.println("distance" + dist);
     y /= count;
     x /= count;
     yaw /= count;
     double time = result.getTimestampSeconds();
- 
+
     return new CameraPoseResultantIdentity(dist, y, x, yaw, time);
   }
 

@@ -4,6 +4,7 @@ import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFieldLayout.OriginPosition;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.wpilibj.DataLogManager;
 import frc.robot.constants.VisionConstants;
 import java.util.concurrent.atomic.AtomicReference;
 import org.photonvision.PhotonCamera;
@@ -32,10 +33,13 @@ public class EstimationRunnable implements Runnable {
   public void run() {
     PhotonPipelineResult photonResults = photonCamera.getLatestResult();
 
-    photonResults.targets.removeIf(
+   /* 
+   photonResults.targets.removeIf(
         t ->
             t.getPoseAmbiguity() > VisionConstants.APRILTAG_AMBIGUITY_THRESHOLD
                 || isTargetTooFarAway(t));
+   
+   */ 
 
     if (!photonResults.hasTargets()) return;
 
@@ -54,7 +58,7 @@ public class EstimationRunnable implements Runnable {
       return false;
     }
     return ((layout.getTagPose(target.getFiducialId()).get().getZ())
-            / Math.tan(Math.toRadians(pitch + 27)))
+            / Math.tan(Math.toRadians(pitch -27)))
         < VisionConstants.APRILTAG_CULL_DISTANCE;
   }
 
@@ -70,7 +74,8 @@ public class EstimationRunnable implements Runnable {
       double individualZ = tagPose.getZ();
 
       count += 1;
-      double individualDist = individualZ / Math.tan(Math.toRadians(i.getPitch() + 27));
+      double individualDist = individualZ / Math.tan(Math.toRadians(i.getPitch() +27));
+      DataLogManager.log("pitch" + (i.getPitch() + 27));
       dist += (individualDist);
       yaw += tagPose.getRotation().getZ() + i.getYaw();
       y += tagPose.getX() + (individualDist / Math.asin(Math.toRadians(i.getYaw())));

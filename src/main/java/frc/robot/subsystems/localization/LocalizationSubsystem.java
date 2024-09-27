@@ -17,6 +17,7 @@ import org.photonvision.PhotonCamera;
 public class LocalizationSubsystem extends SubsystemBase {
   EstimationRunnable estimatorRunnable;
   private CommandSwerveDrivetrain swerve;
+  double distance = 0;
 
   private LocalizingCamera camera =
       new LocalizingCamera(
@@ -44,8 +45,7 @@ public class LocalizationSubsystem extends SubsystemBase {
         NetworkTableInstance.getDefault().getDoubleTopic("/vision/heading").publish();
 
     tab.addString("Pose", () -> StringFormatting.poseToString(swerve.getPose()));
-    tab.addString(
-        "Distance", () -> Double.toString(this.estimatorRunnable.getLatestPose().getDistance()));
+    tab.addString("Distance", () -> Double.toString(this.distance));
   }
 
   /**
@@ -59,6 +59,7 @@ public class LocalizationSubsystem extends SubsystemBase {
       return;
     }
     Pose2d visionPose = robotPose.getPose2d(VisionConstants.CAMERA_TO_ROBOT);
+    this.distance = robotPose.getDistance();
 
     swerve.addVisionMeasurement(visionPose, robotPose.getTimestampSeconds());
   }

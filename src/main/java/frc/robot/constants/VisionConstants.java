@@ -14,15 +14,15 @@ public class VisionConstants {
   public static final Transform3d CAMERA_TO_ROBOT =
       new Transform3d(
           new Translation3d(114.299 / 1000, 0, 277.757 / 1000),
-          new Rotation3d(0, 0, Math.toRadians(0)));
+          new Rotation3d(0, 0, Math.toRadians(-27)));
 
   public static final String CAMERA_NAME = "Front Camera";
 
   public static final Matrix<N3, N1> VISION_MEASUREMENT_STD_DEVS =
       MatBuilder.fill(Nat.N3(), Nat.N1(), 1, 1, 1 * Math.PI);
 
-  public static final double APRILTAG_AMBIGUITY_THRESHOLD = 0.09;
-  public static final double APRILTAG_CULL_DISTANCE = 4;
+  public static final double APRILTAG_AMBIGUITY_THRESHOLD = 0.25;
+  public static final double APRILTAG_CULL_DISTANCE = 6;
 
   public enum TAG {
     BLUE_SOURCE_RIGHT(1),

@@ -51,8 +51,8 @@ public class CameraPoseResultantIdentity {
 
   public Pose2d getPose2d(Transform3d robotToCameraTransform) {
     return new Pose2d(
-        (x + robotToCameraTransform.getX()),
-        y + robotToCameraTransform.getY(),
+        (x - robotToCameraTransform.getX()),
+        y - robotToCameraTransform.getY(),
         new Rotation2d(rot));
   }
 }

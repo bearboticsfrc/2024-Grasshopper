@@ -33,13 +33,15 @@ public class EstimationRunnable implements Runnable {
   public void run() {
     PhotonPipelineResult photonResults = photonCamera.getLatestResult();
 
-   /* 
-   photonResults.targets.removeIf(
-        t ->
-            t.getPoseAmbiguity() > VisionConstants.APRILTAG_AMBIGUITY_THRESHOLD
-                || isTargetTooFarAway(t));
-   
-   */ 
+    photonResults.targets.removeIf(
+        t -> t.getPoseAmbiguity() > VisionConstants.APRILTAG_AMBIGUITY_THRESHOLD);
+    /*
+    photonResults.targets.removeIf(
+         t ->
+             t.getPoseAmbiguity() > VisionConstants.APRILTAG_AMBIGUITY_THRESHOLD
+                 || isTargetTooFarAway(t));
+
+    */
 
     if (!photonResults.hasTargets()) return;
 
@@ -58,7 +60,7 @@ public class EstimationRunnable implements Runnable {
       return false;
     }
     return ((layout.getTagPose(target.getFiducialId()).get().getZ())
-            / Math.tan(Math.toRadians(pitch -27)))
+            / Math.tan(Math.toRadians(pitch - 27)))
         < VisionConstants.APRILTAG_CULL_DISTANCE;
   }
 
@@ -71,14 +73,14 @@ public class EstimationRunnable implements Runnable {
     double yaw = 0;
     for (PhotonTrackedTarget i : (result.targets)) {
       Pose3d tagPose = layout.getTagPose(i.getFiducialId()).get();
-      double individualZ = tagPose.getZ();
+      double individualZ = tagPose.getZ() - VisionConstants.CAMERA_TO_ROBOT.getZ();
 
       count += 1;
-      double individualDist = individualZ / Math.tan(Math.toRadians(i.getPitch() +27));
+      double individualDist = individualZ / Math.tan(Math.toRadians(i.getPitch() + 27));
       DataLogManager.log("pitch" + (i.getPitch() + 27));
       dist += (individualDist);
       yaw += tagPose.getRotation().getZ() + i.getYaw();
-      y += tagPose.getX() + (individualDist / Math.asin(Math.toRadians(i.getYaw())));
+      y += tagPose.getX() + (individualDist / Math.sin(Math.toRadians(i.getYaw())));
       x += tagPose.getY() + (individualDist / Math.cos(Math.toRadians(i.getYaw())));
     }
     dist /= count;

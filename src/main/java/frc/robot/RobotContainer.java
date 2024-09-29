@@ -18,10 +18,12 @@ import frc.bearbotics.util.ProcessedJoystick.JoystickAxis;
 import frc.bearbotics.util.ProcessedJoystick.ThrottleProfile;
 import frc.robot.constants.DriveConstants;
 import frc.robot.constants.RobotConstants;
+import frc.robot.constants.VisionConstants;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.localization.LocalizationSubsystem;
 import frc.robot.subsystems.manipulator.ManipulatorSubsystem;
+import org.photonvision.PhotonUtils;
 
 public class RobotContainer {
   /* Our drivetrain */
@@ -42,9 +44,12 @@ public class RobotContainer {
       new ProcessedJoystick(driverJoystick, this::getThrottleProfile);
 
   private AprilTagFieldLayout layout = AprilTagFields.k2024Crescendo.loadAprilTagLayoutField();
+  private Pose2d redSpeakerCenterPose2d;
 
   public RobotContainer() {
     layout.setOrigin(OriginPosition.kBlueAllianceWallRightSide);
+    redSpeakerCenterPose2d =
+        layout.getTagPose(VisionConstants.TAG.RED_SPEAKER_CENTER.tagNumber).get().toPose2d();
 
     configureBindings();
     setupShuffleboardTab(RobotConstants.COMPETITION_TAB);
@@ -52,21 +57,11 @@ public class RobotContainer {
 
   private void setupShuffleboardTab(ShuffleboardTab shuffleboardTab) {
     shuffleboardTab.add("Home Elevator", manipulatorSubsystem.getElevatorHomeCommand());
+    shuffleboardTab.addDouble("Distance to Speaker", this::getDistanceToSpeaker);
   }
 
   private double getDistanceToSpeaker() {
-    return getDistanceToPose(drivetrain.getPose(), layout.getTagPose(4).get().toPose2d());
-  }
-
-  /**
-   * Calculates the straight-line distance between two poses on the field.
-   *
-   * @param fromPose The starting pose.
-   * @param toPose The target pose.
-   * @return The distance between the two poses in meters.
-   */
-  public static double getDistanceToPose(Pose2d fromPose, Pose2d toPose) {
-    return Math.hypot(fromPose.getX() - toPose.getX(), fromPose.getY() - toPose.getY());
+    return PhotonUtils.getDistanceToPose(drivetrain.getPose(), redSpeakerCenterPose2d);
   }
 
   /** Configure the joystick bindings for the robot. */

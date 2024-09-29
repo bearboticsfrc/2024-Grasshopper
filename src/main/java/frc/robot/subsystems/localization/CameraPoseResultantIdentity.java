@@ -10,7 +10,6 @@ import edu.wpi.first.math.geometry.Transform3d;
  */
 public class CameraPoseResultantIdentity {
 
-  private double dist;
   private double x;
   private double y;
   private double z;
@@ -20,9 +19,7 @@ public class CameraPoseResultantIdentity {
   /*
    * constructs a new camera transform resultant identity
    */
-  public CameraPoseResultantIdentity(
-      double dist, double y, double x, double yaw, double timestamp) {
-    this.dist = dist;
+  public CameraPoseResultantIdentity(double y, double x, double yaw, double timestamp) {
     this.x = x;
     this.y = y;
     this.rot = rot;
@@ -45,14 +42,10 @@ public class CameraPoseResultantIdentity {
     return timestamp;
   }
 
-  public double getDistance() {
-    return dist;
-  }
-
   public Pose2d getPose2d(Transform3d robotToCameraTransform) {
     return new Pose2d(
-        (x - robotToCameraTransform.getX()),
-        y - robotToCameraTransform.getY(),
+        (x + robotToCameraTransform.getX()),
+        y + robotToCameraTransform.getY(),
         new Rotation2d(rot));
   }
 }

@@ -6,6 +6,8 @@ import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.wpilibj.DataLogManager;
 import frc.robot.constants.VisionConstants;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 import org.photonvision.PhotonCamera;
 import org.photonvision.targeting.PhotonPipelineResult;
@@ -33,14 +35,11 @@ public class EstimationRunnable implements Runnable {
   public void run() {
     PhotonPipelineResult photonResults = photonCamera.getLatestResult();
 
-    photonResults.targets.removeIf(
-        t -> t.getPoseAmbiguity() > VisionConstants.APRILTAG_AMBIGUITY_THRESHOLD);
     /*
-    photonResults.targets.removeIf(
+    *  photonResults.targets.removeIf(
          t ->
              t.getPoseAmbiguity() > VisionConstants.APRILTAG_AMBIGUITY_THRESHOLD
-                 || isTargetTooFarAway(t));
-
+                 || isTargetTooFarAway(t));\][]
     */
 
     if (!photonResults.hasTargets()) return;
@@ -48,49 +47,68 @@ public class EstimationRunnable implements Runnable {
     atomicEstimatedCameraTransform.set(getTransform(photonResults));
   }
 
-  /**
-   * Determines whether a detected target is too far away based on a predefined culling distance.
-   *
-   * @param target The PhotonTrackedTarget to evaluate.
-   * @return True if the target is beyond the culling distance, false otherwise.
-   */
-  private boolean isTargetTooFarAway(PhotonTrackedTarget target) {
-    double pitch = target.getPitch();
-    if (!layout.getTagPose(target.getFiducialId()).isPresent()) {
-      return false;
-    }
-    return ((layout.getTagPose(target.getFiducialId()).get().getZ())
-            / Math.tan(Math.toRadians(pitch - 27)))
-        < VisionConstants.APRILTAG_CULL_DISTANCE;
+  public double getHypotenuse(PhotonTrackedTarget target) {
+    Pose3d tagPose = layout.getTagPose(target.getFiducialId()).get();
+    double individualZ = tagPose.getZ() - VisionConstants.CAMERA_TO_ROBOT.getZ();
+    return individualZ / Math.tan(Math.toRadians(target.getPitch() + 27));
   }
 
   public CameraPoseResultantIdentity getTransform(PhotonPipelineResult result) {
     int count = 0;
-    double dist = 0;
     double y = 0;
     double x = 0;
 
     double yaw = 0;
-    for (PhotonTrackedTarget i : (result.targets)) {
+
+    List<PhotonTrackedTarget> targets = result.targets;
+    double maxHype = 0;
+    List<PhotonTrackedTarget> sortedTargets = new ArrayList<PhotonTrackedTarget>();
+    for (PhotonTrackedTarget i : targets) {
+      double indHype = getHypotenuse(i);
+      if (indHype > maxHype) {
+        sortedTargets.add(i);
+      } else {
+        for (PhotonTrackedTarget a : sortedTargets) {
+          if (indHype <= getHypotenuse(a)) {
+            sortedTargets.add(sortedTargets.indexOf(a), i);
+          }
+        }
+      }
+    }
+
+    // Arrays.sort(targets, (e1, e2) -> Comparator.comparing(() -> getHypotenuse(e1), () ->
+    // getHypotenuse(e2)));
+    double lowestDistance = getHypotenuse(sortedTargets.get(0));
+    for (PhotonTrackedTarget i : (sortedTargets)) {
+
       Pose3d tagPose = layout.getTagPose(i.getFiducialId()).get();
-      double individualZ = tagPose.getZ() - VisionConstants.CAMERA_TO_ROBOT.getZ();
+      double individualDist = getHypotenuse(i);
+      if (((individualDist - lowestDistance) > 1)) {
+        break;
+      }
 
       count += 1;
-      double individualDist = individualZ / Math.tan(Math.toRadians(i.getPitch() + 27));
-      DataLogManager.log("pitch" + (i.getPitch() + 27));
-      dist += (individualDist);
+
+      double nueralX = i.getBestCameraToTarget().getX();
+      double nueralY = i.getBestCameraToTarget().getY();
+      double nueralDist = Math.hypot(nueralX, nueralY);
+      double scalar = nueralDist / individualDist;
+      double indX = nueralX / scalar;
+      double indY = nueralY / scalar;
+
       yaw += tagPose.getRotation().getZ() + i.getYaw();
-      y += tagPose.getX() + (individualDist / Math.sin(Math.toRadians(i.getYaw())));
-      x += tagPose.getY() + (individualDist / Math.cos(Math.toRadians(i.getYaw())));
+
+      // DataLogManager.log("")
+      y += tagPose.getY() + indY;
+      x += tagPose.getX() + indX;
+      DataLogManager.log(Double.toString(individualDist));
     }
-    dist /= count;
-    System.out.println("distance" + dist);
     y /= count;
     x /= count;
     yaw /= count;
     double time = result.getTimestampSeconds();
 
-    return new CameraPoseResultantIdentity(dist, y, x, yaw, time);
+    return new CameraPoseResultantIdentity(y, x, yaw, time);
   }
 
   public CameraPoseResultantIdentity getLatestPose() {

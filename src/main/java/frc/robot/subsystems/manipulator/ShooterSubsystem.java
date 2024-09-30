@@ -7,6 +7,7 @@ import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.bearbotics.math.QuadraticCurveInterpolator;
 import frc.bearbotics.motor.MotorBuilder;
 import frc.bearbotics.motor.MotorConfig;
 import frc.bearbotics.motor.MotorPidBuilder;
@@ -24,6 +25,9 @@ public class ShooterSubsystem extends SubsystemBase {
   private RelativeEncoder lowerShooterMotorEncoder;
 
   private double targetVelocity;
+
+  private QuadraticCurveInterpolator velocityInterpolator =
+      new QuadraticCurveInterpolator(ShooterConstants.SHOOT_ANGLE_MAP);
 
   public ShooterSubsystem() {
     configureMotors();
@@ -123,20 +127,19 @@ public class ShooterSubsystem extends SubsystemBase {
    *
    * @param velocity The desired velocity for the shooter motor.
    */
-  public void set(ShooterVelocity velocity) {
-    targetVelocity = velocity.getVelocity();
+  public void set(double velocity) {
+    targetVelocity = velocity;
 
-    upperShooterMotor
-        .getPIDController()
-        .setReference(velocity.getVelocity(), CANSparkMax.ControlType.kVelocity);
-    lowerShooterMotor
-        .getPIDController()
-        .setReference(velocity.getVelocity(), CANSparkMax.ControlType.kVelocity);
+    upperShooterMotor.getPIDController().setReference(velocity, CANSparkMax.ControlType.kVelocity);
+    lowerShooterMotor.getPIDController().setReference(velocity, CANSparkMax.ControlType.kVelocity);
   }
 
-  public void set(double speed) {
-    upperShooterMotor.set(speed);
-    lowerShooterMotor.set(speed);
+  public void set(ShooterVelocity velocity) {
+    set(velocity.getVelocity());
+  }
+
+  public void setVelocityFromDistance(double distance) {
+    set(velocityInterpolator.calculate(distance));
   }
 
   /** Stop both shooter motors. */

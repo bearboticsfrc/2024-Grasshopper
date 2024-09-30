@@ -4,12 +4,14 @@ import com.ctre.phoenix6.mechanisms.swerve.SwerveDrivetrain;
 import com.ctre.phoenix6.mechanisms.swerve.SwerveDrivetrainConstants;
 import com.ctre.phoenix6.mechanisms.swerve.SwerveModuleConstants;
 import com.ctre.phoenix6.mechanisms.swerve.SwerveRequest;
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import frc.bearbotics.fms.AllianceColor;
 import frc.bearbotics.fms.AllianceReadyListener;
+import frc.robot.Vision;
 import java.util.function.Supplier;
 
 /**
@@ -20,10 +22,11 @@ import java.util.function.Supplier;
 // https://v6.docs.ctr-electronics.com/en/stable/docs/tuner/tuner-swerve/index.html
 public class CommandSwerveDrivetrain extends SwerveDrivetrain
     implements Subsystem, AllianceReadyListener {
+  private final Vision vision = new Vision();
   /* Blue alliance sees forward as 180 degrees (toward blue alliance wall) */
-  private final Rotation2d BlueAlliancePerspectiveRotation = Rotation2d.fromDegrees(180);
+  private final Rotation2d BlueAlliancePerspectiveRotation = Rotation2d.fromDegrees(10);
   /* Red alliance sees forward as 0 degrees (toward red alliance wall) */
-  private final Rotation2d RedAlliancePerspectiveRotation = Rotation2d.fromDegrees(10);
+  private final Rotation2d RedAlliancePerspectiveRotation = Rotation2d.fromDegrees(180);
 
   public CommandSwerveDrivetrain(
       SwerveDrivetrainConstants driveTrainConstants, SwerveModuleConstants... modules) {
@@ -33,6 +36,29 @@ public class CommandSwerveDrivetrain extends SwerveDrivetrain
 
   public Command applyRequest(Supplier<SwerveRequest> requestSupplier) {
     return run(() -> this.setControl(requestSupplier.get()));
+  }
+
+  public Command applyRequest(SwerveRequest request) {
+    return runOnce(() -> this.setControl(request));
+  }
+
+  @Override
+  public void periodic() {
+    // Correct pose estimate with vision measurements
+    var visionEst = vision.getEstimatedGlobalPose();
+
+    visionEst.ifPresent(
+        est -> {
+          var estPose = est.estimatedPose.toPose2d();
+          // Change our trust in the measurement based on the tags we can see
+          var estStdDevs = vision.getEstimationStdDevs(estPose);
+
+          addVisionMeasurement(estPose, est.timestampSeconds, estStdDevs);
+        });
+  }
+
+  public Pose2d getPose() {
+    return getState().Pose;
   }
 
   /** Update our field-centric perspective when we receive a new {@link Alliance} */

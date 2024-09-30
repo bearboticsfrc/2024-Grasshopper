@@ -8,6 +8,7 @@ import com.revrobotics.RelativeEncoder;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.bearbotics.math.QuadraticCurveInterpolator;
 import frc.bearbotics.motor.MotorBuilder;
 import frc.bearbotics.motor.MotorConfig;
 import frc.bearbotics.motor.MotorPidBuilder;
@@ -28,6 +29,9 @@ public class ElevatorSubsystem extends SubsystemBase {
       new DigitalInput(ElevatorConstants.UPPER_LIMIT_SWITCH_CHANNEL);
 
   private double targetPosition;
+
+  private QuadraticCurveInterpolator angleInterpolator =
+      new QuadraticCurveInterpolator(ElevatorConstants.SHOOT_ANGLE_MAP);
 
   public ElevatorSubsystem() {
     configureMotors();
@@ -96,25 +100,35 @@ public class ElevatorSubsystem extends SubsystemBase {
   }
 
   /**
-   * Set the target postition for the elevator driver
-   *
-   * @param position An enum representing the elevator position.
-   */
-  public void set(ElevatorPosition position) {
-    targetPosition = position.getPosition();
-
-    elevatorMotor
-        .getPIDController()
-        .setReference(position.getPosition(), CANSparkMax.ControlType.kPosition);
-  }
-
-  /**
    * Sets the speed of the elevator motor
    *
    * @param speed The speed of the elevator motor
    */
   public void set(double speed) {
     elevatorMotor.set(speed);
+  }
+
+  /**
+   * Set the interpolated angle of the arm from a supplied distance to the speaker
+   *
+   * @param distance Distance to the speaker
+   */
+  public void setPositionFromDistance(double distance) {
+    setPosition(angleInterpolator.calculate(distance));
+  }
+
+  /**
+   * Set the target postition for the elevator driver
+   *
+   * @param position An enum representing the elevator position.
+   */
+  public void set(ElevatorPosition position) {
+    setPosition(position.getPosition());
+  }
+
+  public void setPosition(double position) {
+    targetPosition = position;
+    elevatorMotor.getPIDController().setReference(position, CANSparkMax.ControlType.kPosition);
   }
 
   /** Stop the elevator motor */

@@ -8,6 +8,7 @@ import frc.robot.constants.manipulator.ElevatorConstants.ElevatorPosition;
 import frc.robot.constants.manipulator.IntakeConstants;
 import frc.robot.constants.manipulator.IntakeConstants.IntakeVelocity;
 import frc.robot.constants.manipulator.ShooterConstants.ShooterVelocity;
+import java.util.function.DoubleSupplier;
 
 public class ManipulatorSubsystem extends SubsystemBase {
   private final IntakeSubsystem intake;
@@ -55,6 +56,10 @@ public class ManipulatorSubsystem extends SubsystemBase {
         intake::isNoteInShooter);
   }
 
+  public Command getFeedCommand() {
+    return getIntakeSetCommand(IntakeVelocity.FULL);
+  }
+
   /**
    * Get the intake set command
    *
@@ -75,6 +80,25 @@ public class ManipulatorSubsystem extends SubsystemBase {
 
   public Command getElevatorStopCommand() {
     return elevator.runOnce(() -> elevator.stopMotor());
+  }
+
+  public Command getManipulatorStopCommand() {
+    return Commands.parallel(
+        getIntakeStopCommand(), getShooterStopCommand(), getElevatorStopCommand());
+  }
+
+  public Command getShootCommand(DoubleSupplier distanceSupplier) {
+    return Commands.sequence(
+        Commands.parallel(
+            shooter.runOnce(() -> shooter.setVelocityFromDistance(distanceSupplier.getAsDouble())),
+            elevator.runOnce(
+                () -> elevator.setPositionFromDistance(distanceSupplier.getAsDouble()))),
+        Commands.parallel(
+            Commands.waitUntil(shooter::atTargetVelocity),
+            Commands.waitUntil(elevator::atTargetPosition)),
+        getIntakeSetCommand(IntakeVelocity.FULL),
+        Commands.waitUntil(intake::isNoteInShooter),
+        getManipulatorStopCommand());
   }
 
   /**

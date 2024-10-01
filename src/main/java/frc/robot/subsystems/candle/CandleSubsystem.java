@@ -8,6 +8,8 @@ import com.ctre.phoenix.led.LarsonAnimation;
 import com.ctre.phoenix.led.LarsonAnimation.BounceMode;
 import com.ctre.phoenix.led.StrobeAnimation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
+import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.bearbotics.fms.AllianceColor;
@@ -20,20 +22,29 @@ public class CandleSubsystem extends SubsystemBase implements AllianceReadyListe
   private final int animationSlot = 0;
   private Color currentColor;
   private int ledsSize;
+  double red = 1.0000327654;
+  private ShuffleboardTab CAN = Shuffleboard.getTab("CANDLE");
+
+  public void periodic(){
+    setColor(new Color(Math.random(),Math.random(), Math.random()));
+  }
 
   /**
    * Initializes a new instance of the Candle Subsystem, configuring the CANdle device with default
-   * settings and preparing the LED segment for control.
+   * settings and preparing the LEDs for control.
    */
   public CandleSubsystem() {
+    CAN.add("RED!!!", red);
     CANdleConfiguration candleConfiguration = new CANdleConfiguration();
     candleConfiguration.vBatOutputMode = VBatOutputMode.Modulated;
     LEDS.configAllSettings(candleConfiguration, 100);
-
     AllianceColor.addListener(this);
   }
 
-  @Override
+  /**
+   * updates the current Alliance.
+   * @Override
+   */
   public void updateAlliance(Alliance alliance) {
 
     if (currentColor == null || currentColor == Color.kRed || currentColor == Color.kBlue) {
@@ -41,40 +52,38 @@ public class CandleSubsystem extends SubsystemBase implements AllianceReadyListe
     }
   }
 
-  /**
-   * Clears the animations and sets the color of all LED segments to black (effectively turning them
-   * off).
-   */
-
-  /**
-   * Clears the animations and sets the color of a specific LED segment to black.
-   *
-   * @param segment The LED segment to clear.
-   */
-  public void clearSegment(CANdle segment) {
+  /** 
+   * Clears the animations and turns the LEDs off. 
+  */
+  public void clearSegment() {
     LEDS.clearAnimation(animationSlot);
     setColor(Color.kBlack);
   }
 
-  /** Sets the color of the entire LED strip. */
+  /**
+   * Sets the color of the entire LED strip to the specified color.
+   * @param color the color of the leds
+   */
   public void setColor(Color color) {
     currentColor = color;
+    red = currentColor.red;
     LEDS.setLEDs(
         (int) (currentColor.red * 255),
         (int) (currentColor.green * 255),
         (int) (currentColor.blue * 255));
+    System.out.println(currentColor.blue);
+    System.out.println(currentColor.red);
+    System.out.println(currentColor.green);
   }
 
   /**
-   * Sets a specific animation pattern with a specified color for specified segment. Supports strobe
-   * and larson patterns.
+   * Sets a specific animation pattern with a specified color. Supports strobe and larson patterns.
    *
-   * @param pattern The pattern to display on the LEDs.
-   * @param color The color to use for the pattern.
-   * @param segment The segment to set the pattern to.
+   * @param pattern The animation to display on the LEDs.
+   * @param color The color to use for the animation.
    */
   public void setPattern(CandlePattern pattern, Color color) {
-    clearSegment(LEDS);
+    clearSegment();
 
     switch (pattern) {
       case STROBE:
@@ -85,6 +94,12 @@ public class CandleSubsystem extends SubsystemBase implements AllianceReadyListe
     }
   }
 
+  /**
+   * sets the LEDs to a Larson animation.
+   *
+   * @param color the color of the LEDs.
+   * @param speed the speed of the animation.
+   */
   public void setLarsonAnimation(Color color, double speed) {
     currentColor = color;
 
@@ -101,8 +116,9 @@ public class CandleSubsystem extends SubsystemBase implements AllianceReadyListe
 
     setAnimation(animation, animationSlot);
   }
+
   /**
-   * Applies a strobe animation to this LED segment.
+   * Applies a strobe animation to the LEDs.
    *
    * @param color The color of the strobe effect.
    * @param speed The speed of the strobe effect.
@@ -132,10 +148,16 @@ public class CandleSubsystem extends SubsystemBase implements AllianceReadyListe
     setColor(color);
   }
 
+  /** Animates the LEDs. */
   private void setAnimation(Animation animation, int slot) {
     LEDS.animate(animation, animationSlot);
   }
 
+  /**
+   * gets and return the Alliance color.
+   *
+   * @return the Alliance color
+   */
   private Color getAllianceColor(boolean isRedAlliance) {
     return isRedAlliance ? Color.kRed : Color.kBlue;
   }

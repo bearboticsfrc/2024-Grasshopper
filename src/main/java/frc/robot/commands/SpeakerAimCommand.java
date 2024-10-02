@@ -23,6 +23,7 @@ public class SpeakerAimCommand extends Command {
   private final DoubleSupplier xVelocitySupplier;
   private final DoubleSupplier yVelocitySupplier;
 
+  private Pose2d speakerPose;
   private boolean endless = true;
 
   /**
@@ -58,6 +59,12 @@ public class SpeakerAimCommand extends Command {
     addRequirements(drivetrain);
   }
 
+  /** Initalize, set the speaker pose */
+  @Override
+  public void initialize() {
+    speakerPose = FieldPositions.getInstance().getSpeakerCenter();
+  }
+
   /**
    * Executes the auto-aiming logic by aligning the robot's heading with the specified target point.
    */
@@ -66,8 +73,13 @@ public class SpeakerAimCommand extends Command {
     drivetrain.setControl(getSwerveRequest());
   }
 
+  /**
+   * Get the swerve request to align with the speaker
+   *
+   * @return A swerve request describing how we want to align
+   */
   public SwerveRequest getSwerveRequest() {
-    Rotation2d offsetRotation = PhotonUtils.getYawToPose(drivetrain.getPose(), getSpeakerPose());
+    Rotation2d offsetRotation = getYawToSpeaker();
     double rotateOutput = rotSpeedPidController.calculate(offsetRotation.getRadians());
 
     return swerveRequest
@@ -76,8 +88,13 @@ public class SpeakerAimCommand extends Command {
         .withRotationalRate(rotateOutput);
   }
 
-  private Pose2d getSpeakerPose() {
-    return FieldPositions.getInstance().getSpeakerCenter();
+  /**
+   * Get the yaw offset to the speaker
+   *
+   * @return The yaw
+   */
+  private Rotation2d getYawToSpeaker() {
+    return PhotonUtils.getYawToPose(drivetrain.getPose(), speakerPose);
   }
 
   /** Returns true if the PID controller indicates we are aimed. */

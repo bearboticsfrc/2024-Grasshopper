@@ -44,7 +44,7 @@ public class Vision {
   private final PhotonCamera camera;
   private final PhotonPoseEstimator photonEstimator;
 
-  private double lastEstTimestamp = 0;
+  private double lastEstTimestamp;
 
   public Vision() {
     camera = new PhotonCamera(VisionConstants.CAMERA_NAME);
@@ -58,6 +58,11 @@ public class Vision {
     photonEstimator.setMultiTagFallbackStrategy(PoseStrategy.LOWEST_AMBIGUITY);
   }
 
+  /**
+   * Get the latest photon result from the camera
+   *
+   * @return The result
+   */
   public PhotonPipelineResult getLatestResult() {
     return camera.getLatestResult();
   }
@@ -81,32 +86,48 @@ public class Vision {
   }
 
   /**
-   * The standard deviations of the estimated pose from {@link #getEstimatedGlobalPose()}, for use
-   * with {@link edu.wpi.first.math.estimator.SwerveDrivePoseEstimator SwerveDrivePoseEstimator}.
-   * This should only be used when there are targets visible.
+   * Returns the standard deviations for the estimated pose, used with the SwerveDrivePoseEstimator.
+   * This applies when targets are visible.
    *
-   * @param estimatedPose The estimated pose to guess standard deviations for.
+   * @param estimatedPose The pose for which to estimate the standard deviations.
    */
   public Matrix<N3, N1> getEstimationStdDevs(Pose2d estimatedPose) {
     var estStdDevs = VisionConstants.SINGLE_TAG_STD_DEVS;
     var targets = getLatestResult().getTargets();
+
     int numTags = 0;
     double avgDist = 0;
-    for (var tgt : targets) {
-      var tagPose = photonEstimator.getFieldTags().getTagPose(tgt.getFiducialId());
-      if (tagPose.isEmpty()) continue;
+
+    // Calculate the number of visible tags and average distance
+    for (var target : targets) {
+      var tagPose = photonEstimator.getFieldTags().getTagPose(target.getFiducialId());
+
+      if (tagPose.isEmpty()) {
+        continue; // No pose
+      }
+
       numTags++;
       avgDist +=
           tagPose.get().toPose2d().getTranslation().getDistance(estimatedPose.getTranslation());
     }
-    if (numTags == 0) return estStdDevs;
-    avgDist /= numTags;
-    // Decrease std devs if multiple targets are visible
-    if (numTags > 1) estStdDevs = VisionConstants.MULTI_TAG_STD_DEVS;
-    // Increase std devs based on (average) distance
-    if (numTags == 1 && avgDist > 4)
+
+    if (numTags == 0) {
+      return VisionConstants.SINGLE_TAG_STD_DEVS; // No tags visible, return default std devs
+    } else {
+      avgDist /= numTags; // Compute average distance
+    }
+
+    // Use lower std devs if multiple targets are visible
+    if (numTags > 1) {
+      estStdDevs = VisionConstants.MULTI_TAG_STD_DEVS;
+    }
+
+    // Increase std devs if far from a single target
+    if (numTags == 1 && avgDist > 4) {
       estStdDevs = VecBuilder.fill(Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE);
-    else estStdDevs = estStdDevs.times(1 + (avgDist * avgDist / 30));
+    } else {
+      estStdDevs = estStdDevs.times(1 + (avgDist * avgDist / 30));
+    }
 
     return estStdDevs;
   }

@@ -11,7 +11,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
  * value not in dashboard.
  */
 public class TunableNumber {
-  private static final String TABLE_KEY = "Shuffleboard/Comeptition";
+  private static final String TABLE_KEY = "Tuning";
 
   private String key;
   private double defaultValue;

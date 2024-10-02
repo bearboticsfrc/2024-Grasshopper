@@ -5,19 +5,17 @@
 package frc.robot;
 
 import com.ctre.phoenix6.mechanisms.swerve.SwerveRequest;
-import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import frc.bearbotics.location.FieldPositions;
 import frc.bearbotics.util.ProcessedJoystick;
 import frc.bearbotics.util.ProcessedJoystick.JoystickAxis;
 import frc.bearbotics.util.ProcessedJoystick.ThrottleProfile;
-import frc.robot.commands.AutoShootCommand;
 import frc.robot.commands.SpeakerAimCommand;
 import frc.robot.constants.DriveConstants;
 import frc.robot.constants.RobotConstants;
-import frc.robot.constants.VisionConstants;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.manipulator.ManipulatorSubsystem;
@@ -39,15 +37,7 @@ public class RobotContainer {
   private ProcessedJoystick processedJoystick =
       new ProcessedJoystick(driverJoystick, this::getThrottleProfile);
 
-  private Pose2d tagFourPose2d;
-
   public RobotContainer() {
-    tagFourPose2d =
-        VisionConstants.TAG_LAYOUT
-            .getTagPose(VisionConstants.TAG.RED_SPEAKER_CENTER.tagNumber)
-            .get()
-            .toPose2d();
-
     configureBindings();
     setupShuffleboardTab(RobotConstants.COMPETITION_TAB);
   }
@@ -55,13 +45,6 @@ public class RobotContainer {
   private void setupShuffleboardTab(ShuffleboardTab shuffleboardTab) {
     shuffleboardTab.add("Home Elevator", manipulatorSubsystem.homeElevator());
     shuffleboardTab.addDouble("Distance to Speaker", this::getDistanceToSpeaker);
-    shuffleboardTab.addDouble(
-        "Yaw to Speaker Center Pose",
-        () -> PhotonUtils.getYawToPose(drivetrain.getPose(), tagFourPose2d).getDegrees());
-  }
-
-  private double getDistanceToSpeaker() {
-    return PhotonUtils.getDistanceToPose(drivetrain.getPose(), tagFourPose2d);
   }
 
   /** Configure the joystick bindings for the robot. */
@@ -88,7 +71,7 @@ public class RobotContainer {
 
     driverJoystick
         .x()
-        .whileTrue(new AutoShootCommand(drivetrain, manipulatorSubsystem))
+        .whileTrue(manipulatorSubsystem.distanceShoot(this::getDistanceToSpeaker))
         .onFalse(manipulatorSubsystem.stopManipulator());
 
     driverJoystick
@@ -130,6 +113,15 @@ public class RobotContainer {
     return throttleProfile;
   }
 
+  /**
+   * Get the distance (in meters) to the speaker center (tag 4 for red alliance)
+   *
+   * @return The distance, in meters
+   */
+  private double getDistanceToSpeaker() {
+    return PhotonUtils.getDistanceToPose(
+        drivetrain.getPose(), FieldPositions.getInstance().getSpeakerCenter());
+  }
   /**
    * Get the autonomous command.
    *

@@ -5,7 +5,9 @@
 package frc.robot;
 
 import com.ctre.phoenix6.mechanisms.swerve.SwerveRequest;
+import com.pathplanner.lib.commands.FollowPathCommand;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -14,6 +16,7 @@ import frc.bearbotics.util.ProcessedJoystick;
 import frc.bearbotics.util.ProcessedJoystick.JoystickAxis;
 import frc.bearbotics.util.ProcessedJoystick.ThrottleProfile;
 import frc.robot.commands.SpeakerAimCommand;
+import frc.robot.commands.autos.Sub1W2W3;
 import frc.robot.constants.DriveConstants;
 import frc.robot.constants.RobotConstants;
 import frc.robot.generated.TunerConstants;
@@ -26,24 +29,28 @@ public class RobotContainer {
   private final CommandSwerveDrivetrain drivetrain = TunerConstants.DriveTrain;
 
   /* Our manipulator */
-  private final ManipulatorSubsystem manipulatorSubsystem = new ManipulatorSubsystem();
+  private final ManipulatorSubsystem manipulator = new ManipulatorSubsystem();
 
   /* Our driver joystick */
   private final CommandXboxController driverJoystick =
       new CommandXboxController(DriveConstants.DRIVER_CONTROLLER_PORT);
 
   /* Our processed joystick inputs */
-  private ThrottleProfile throttleProfile = ThrottleProfile.NORMAL;
-  private ProcessedJoystick processedJoystick =
+  private final ProcessedJoystick processedJoystick =
       new ProcessedJoystick(driverJoystick, this::getThrottleProfile);
+  private ThrottleProfile throttleProfile = ThrottleProfile.NORMAL;
+
+  /* Our auto command choose on Shuffleboard */
+  private final SendableChooser<Command> autoCommandChooser = new SendableChooser<>();
 
   public RobotContainer() {
     configureBindings();
     setupShuffleboardTab(RobotConstants.COMPETITION_TAB);
+    buildAutoList();
   }
 
   private void setupShuffleboardTab(ShuffleboardTab shuffleboardTab) {
-    shuffleboardTab.add("Home Elevator", manipulatorSubsystem.homeElevator());
+    shuffleboardTab.add("Home Elevator", manipulator.homeElevator());
     shuffleboardTab.addDouble("Distance to Speaker", this::getDistanceToSpeaker);
   }
 
@@ -55,24 +62,24 @@ public class RobotContainer {
     driverJoystick.a().onTrue(drivetrain.runOnce(drivetrain::seedFieldRelative));
 
     driverJoystick
-        .leftStick()
+        .rightStick()
         .whileTrue(Commands.runOnce(() -> setThrottleProfile(ThrottleProfile.TURBO)))
         .onFalse(Commands.runOnce(() -> setThrottleProfile(ThrottleProfile.NORMAL)));
 
     driverJoystick
-        .rightStick()
+        .leftStick()
         .whileTrue(Commands.runOnce(() -> setThrottleProfile(ThrottleProfile.TURTLE)))
         .onFalse(Commands.runOnce(() -> setThrottleProfile(ThrottleProfile.NORMAL)));
 
     driverJoystick
         .leftBumper()
-        .whileTrue(manipulatorSubsystem.intakeNote())
-        .onFalse(manipulatorSubsystem.stopIntake());
+        .whileTrue(manipulator.intakeNote())
+        .onFalse(manipulator.stopIntake());
 
     driverJoystick
         .x()
-        .whileTrue(manipulatorSubsystem.distanceShoot(this::getDistanceToSpeaker))
-        .onFalse(manipulatorSubsystem.stopManipulator());
+        .whileTrue(manipulator.distanceShoot(this::getDistanceToSpeaker))
+        .onFalse(manipulator.stopManipulator());
 
     driverJoystick
         .rightBumper()
@@ -123,11 +130,36 @@ public class RobotContainer {
         drivetrain.getPose(), FieldPositions.getInstance().getSpeakerCenter());
   }
   /**
+   * Provides an override for the robot's rotation target during autonomous path following. This can
+   * be used to dynamically adjust the robot's orientation based on strategic needs.
+   *
+   * @return An Optional containing the new rotation target, or an empty Optional if no override is
+   *     needed.
+   */
+  private void buildAutoList() {
+    FollowPathCommand.warmupCommand().schedule();
+
+    autoCommandChooser.setDefaultOption("0 - NoOp", Commands.idle());
+    autoCommandChooser.addOption(
+        "1 - Sub1W2W3", Sub1W2W3.get(drivetrain, manipulator, this::getDistanceToSpeaker));
+
+    RobotConstants.COMPETITION_TAB
+        .add("Auto Command", autoCommandChooser)
+        .withSize(4, 1)
+        .withPosition(0, 1);
+  }
+
+  /**
    * Get the autonomous command.
    *
    * @return the autonomous command.
    */
   public Command getAutonomousCommand() {
-    return Commands.print("No autonomous command configured");
+    return autoCommandChooser.getSelected();
+  }
+
+  /** Ran on teleop init. Stops the manipulator */
+  public void teleopInit() {
+    manipulator.stopManipulator().schedule();
   }
 }

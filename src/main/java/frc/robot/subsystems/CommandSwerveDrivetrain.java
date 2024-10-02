@@ -28,7 +28,7 @@ public class CommandSwerveDrivetrain extends SwerveDrivetrain
     implements Subsystem, AllianceReadyListener {
 
   private final Vision vision = new Vision();
-  private final Rotation2d blueAllianceRotation = Rotation2d.fromDegrees(10);
+  private final Rotation2d blueAllianceRotation = Rotation2d.fromDegrees(0);
   private final Rotation2d redAllianceRotation = Rotation2d.fromDegrees(180);
   private final SwerveRequest.ApplyChassisSpeeds autoRequest =
       new SwerveRequest.ApplyChassisSpeeds();
@@ -90,8 +90,12 @@ public class CommandSwerveDrivetrain extends SwerveDrivetrain
         this::getCurrentRobotChassisSpeeds,
         this::setChassisSpeeds,
         new HolonomicPathFollowerConfig(
-            TunerConstants.kSpeedAt12VoltsMps, driveBaseRadius, new ReplanningConfig()),
-        () -> AllianceColor.getAlliance() == Alliance.Red,
+            new PIDConstants(1),
+            new PIDConstants(1),
+            TunerConstants.kSpeedAt12VoltsMps,
+            driveBaseRadius,
+            new ReplanningConfig()),
+        () -> m_operatorForwardDirection == redAllianceRotation,
         this);
   }
 

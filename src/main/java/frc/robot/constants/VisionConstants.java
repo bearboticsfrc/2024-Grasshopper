@@ -21,9 +21,10 @@ public class VisionConstants {
       AprilTagFields.kDefaultField.loadAprilTagLayoutField();
 
   // The standard deviations of our vision estimated poses, which affect correction rate
-  // (Fake values. Experiment and determine estimation noise on an actual robot.)
-  public static final Matrix<N3, N1> SINGLE_TAG_STD_DEVS = VecBuilder.fill(4, 4, 8);
-  public static final Matrix<N3, N1> MULTI_TAG_STD_DEVS = VecBuilder.fill(0.5, 0.5, 1);
+  public static final Matrix<N3, N1> SINGLE_TAG_STD_DEVS =
+      VecBuilder.fill(.8, .8, Math.toRadians(30));
+  public static final Matrix<N3, N1> MULTI_TAG_STD_DEVS =
+      VecBuilder.fill(0.1, 0.1, Math.toRadians(20));
 
   public enum TAG {
     BLUE_SOURCE_RIGHT(1),

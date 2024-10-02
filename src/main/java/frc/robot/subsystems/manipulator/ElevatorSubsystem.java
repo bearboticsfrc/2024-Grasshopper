@@ -109,28 +109,33 @@ public class ElevatorSubsystem extends SubsystemBase {
    *
    * @param speed The speed of the elevator motor
    */
-  public void set(double speed) {
+  public void setSpeed(double speed) {
     elevatorMotor.set(speed);
   }
 
   /**
-   * Set the interpolated angle of the arm from a supplied distance to the speaker
+   * Set the target postition for the elevator
    *
-   * @param distance Distance to the speaker
+   * @param position An enum representing the elevator position
+   */
+  public void setPosition(ElevatorPosition position) {
+    setPosition(position.getPosition());
+  }
+
+  /**
+   * Set the interpolated angle of the elevator from a supplied distance
+   *
+   * @param distance Distance to the target
    */
   public void setPositionFromDistance(double distance) {
     setPosition(angleInterpolator.calculate(MathUtil.clamp(distance, MIN_DISTANCE, MAX_DISTANCE)));
   }
 
   /**
-   * Set the target postition for the elevator driver
+   * Set the position for the elevator
    *
-   * @param position An enum representing the elevator position.
+   * @param position The target position
    */
-  public void set(ElevatorPosition position) {
-    setPosition(position.getPosition());
-  }
-
   public void setPosition(double position) {
     targetPosition = position;
     elevatorMotor.getPIDController().setReference(position, CANSparkMax.ControlType.kPosition);

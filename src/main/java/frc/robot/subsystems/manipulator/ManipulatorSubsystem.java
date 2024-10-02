@@ -41,7 +41,7 @@ public class ManipulatorSubsystem extends SubsystemBase {
   public Command homeElevator() {
     return Commands.sequence(
             elevator.runOnce(elevator::maxEncoder),
-            elevator.runOnce(() -> elevator.set(ElevatorConstants.HOMING_SPEED)),
+            elevator.runOnce(() -> elevator.setSpeed(ElevatorConstants.HOMING_SPEED)),
             Commands.waitUntil(elevator::isAtLowerLimit),
             elevator.runOnce(elevator::stopMotor),
             elevator.runOnce(elevator::tareEncoder))
@@ -65,7 +65,7 @@ public class ManipulatorSubsystem extends SubsystemBase {
     return Commands.either(
         Commands.idle(),
         Commands.sequence(
-            intake.runOnce(() -> intake.set(IntakeVelocity.FULL)),
+            intake.runOnce(() -> intake.setVelocity(IntakeVelocity.FULL)),
             Commands.waitUntil(intake::isNoteInShooter),
             Commands.waitSeconds(IntakeConstants.STOP_DELAY),
             intake.runOnce(intake::stopMotor)),
@@ -85,7 +85,9 @@ public class ManipulatorSubsystem extends SubsystemBase {
    */
   public Command feedNote() {
     return Commands.sequence(
-        setIntake(IntakeVelocity.FULL), Commands.waitSeconds(0.25), stopManipulator());
+        setIntake(IntakeVelocity.FULL),
+        Commands.waitSeconds(IntakeConstants.FEED_DELAY),
+        stopIntake());
   }
 
   /**
@@ -95,7 +97,7 @@ public class ManipulatorSubsystem extends SubsystemBase {
    * @return The command to set the intake.
    */
   public Command setIntake(IntakeVelocity velocity) {
-    return intake.runOnce(() -> intake.set(velocity));
+    return intake.runOnce(() -> intake.setVelocity(velocity));
   }
 
   /**
@@ -142,6 +144,7 @@ public class ManipulatorSubsystem extends SubsystemBase {
    *       distance
    *   <li>Wait for the shooter and elevator to reach their target
    *   <li>Feed the note
+   *   <li>Stop the manipulator
    * </ol>
    *
    * @param distanceSupplier A supplier for the distance to adjust the shooter and elevator.
@@ -149,7 +152,10 @@ public class ManipulatorSubsystem extends SubsystemBase {
    */
   public Command distanceShoot(DoubleSupplier distanceSupplier) {
     return Commands.sequence(
-        runShooterAndElevator(distanceSupplier), waitForShooterAndElevator(), feedNote());
+        runShooterAndElevator(distanceSupplier),
+        waitForShooterAndElevator(),
+        feedNote(),
+        stopManipulator());
   }
 
   /**
@@ -184,7 +190,7 @@ public class ManipulatorSubsystem extends SubsystemBase {
    */
   public Command setElevator(ElevatorPosition position) {
     return Commands.sequence(
-        elevator.runOnce(() -> elevator.set(position)),
+        elevator.runOnce(() -> elevator.setPosition(position)),
         Commands.waitUntil(elevator::atTargetPosition));
   }
 
@@ -195,7 +201,7 @@ public class ManipulatorSubsystem extends SubsystemBase {
    * @return The command to set the elevator.
    */
   public Command setElevator(double speed) {
-    return elevator.runOnce(() -> elevator.set(speed));
+    return elevator.runOnce(() -> elevator.setSpeed(speed));
   }
 
   /**

@@ -7,6 +7,9 @@ public abstract class IntakeConstants {
   // Delay to wait until we stop the intake motors once we trip the beam-break in our intake cycle
   public static final double STOP_DELAY = 0.03;
 
+  // Delay to wait until stopping the intake when feeding a note
+  public static final double FEED_DELAY = 0.5;
+
   public static class IntakeMotor {
     public static final String NAME = "Intake Motor";
     public static final int MOTOR_PORT = 5;

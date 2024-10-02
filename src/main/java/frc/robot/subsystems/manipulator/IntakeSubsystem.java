@@ -80,12 +80,12 @@ public class IntakeSubsystem extends SubsystemBase {
   }
 
   /**
-   * Set the speed of the intake motor
+   * Set the velocity of the intake motor
    *
    * @param position An enum representing the intake speed.
    */
-  public void set(IntakeVelocity speed) {
-    intakeMotor.set(speed.getSpeed());
+  public void setVelocity(IntakeVelocity velocity) {
+    intakeMotor.set(velocity.getSpeed());
   }
 
   /** Stop the intake motor */

@@ -27,6 +27,7 @@ package frc.robot;
 import static frc.robot.constants.VisionConstants.ROBOT_TO_CAMERA_TRANSFORM;
 import static frc.robot.constants.VisionConstants.TAG_LAYOUT;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -78,7 +79,7 @@ public class Vision {
     var visionEst = photonEstimator.update();
     double latestTimestamp = camera.getLatestResult().getTimestampSeconds();
 
-    if (Math.abs(latestTimestamp - lastEstTimestamp) > 1e-5) {
+    if (!MathUtil.isNear(latestTimestamp, lastEstTimestamp, 1e-5)) {
       lastEstTimestamp = latestTimestamp;
     }
 

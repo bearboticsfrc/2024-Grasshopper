@@ -15,46 +15,50 @@ import org.photonvision.PhotonUtils;
 public class SpeakerAimCommand extends Command {
   private final CommandSwerveDrivetrain drivetrain;
 
-  private PIDController rotSpeedPidController =
+  private final PIDController rotationalPIDController =
       new PIDController(SpeakerAimConstants.RotationPid.P, 0, 0);
 
   private final SwerveRequest.FieldCentric swerveRequest = new FieldCentric();
 
-  private final DoubleSupplier xVelocitySupplier;
-  private final DoubleSupplier yVelocitySupplier;
+  private DoubleSupplier xVelocitySupplier = () -> 0;
+  private DoubleSupplier yVelocitySupplier = () -> 0;
 
   private Pose2d speakerPose;
-  private boolean endless = true;
+  private boolean endless = false;
 
   /**
-   * Constructs the AutoAimCommand with the drivetrain and target point.
+   * Constructs the SpeakerAimCommand for aiming at the speaker with x and y velocity suppliers for
+   * dynanic driving while aiming
    *
-   * @param drivetrain The drivetrain instance for robot movement control.
-   */
-  public SpeakerAimCommand(CommandSwerveDrivetrain drivetrain) {
-    this(drivetrain, () -> 0, () -> 0);
-    this.endless = false;
-  }
-
-  /**
-   * Constructs the AutoAimCommand with the drivetrain and target point.
-   *
-   * @param drivetrain The drivetrain instance for robot movement control.
+   * @param drivetrain The drivetrain instance
+   * @param xVelocitySupplier The x velocity supplier
+   * @param yVelocitySupplier The y velocity supplier
    */
   public SpeakerAimCommand(
       CommandSwerveDrivetrain drivetrain,
       DoubleSupplier xVelocitySupplier,
       DoubleSupplier yVelocitySupplier) {
-    this.drivetrain = drivetrain;
+    this(drivetrain);
+
+    this.endless = true;
     this.xVelocitySupplier = xVelocitySupplier;
     this.yVelocitySupplier = yVelocitySupplier;
+  }
 
-    rotSpeedPidController.enableContinuousInput(
+  /**
+   * Constructs the SpeakerAimCommand for aiming at the speaker
+   *
+   * @param drivetrain The drivetrain instance for robot movement control.
+   */
+  public SpeakerAimCommand(CommandSwerveDrivetrain drivetrain) {
+    this.drivetrain = drivetrain;
+
+    rotationalPIDController.enableContinuousInput(
         SpeakerAimConstants.RotationPid.ContinuousInput.MIN,
         SpeakerAimConstants.RotationPid.ContinuousInput.MAX);
 
-    rotSpeedPidController.setTolerance(SpeakerAimConstants.SETPOINT_TOLERANCE.getRadians());
-    rotSpeedPidController.setSetpoint(0);
+    rotationalPIDController.setTolerance(SpeakerAimConstants.SETPOINT_TOLERANCE.getRadians());
+    rotationalPIDController.setSetpoint(0);
 
     addRequirements(drivetrain);
   }
@@ -65,9 +69,7 @@ public class SpeakerAimCommand extends Command {
     speakerPose = FieldPositions.getInstance().getSpeakerCenter();
   }
 
-  /**
-   * Executes the auto-aiming logic by aligning the robot's heading with the specified target point.
-   */
+  /** Align the robot's heading with the speaker's pose */
   @Override
   public void execute() {
     drivetrain.setControl(getSwerveRequest());
@@ -80,7 +82,7 @@ public class SpeakerAimCommand extends Command {
    */
   public SwerveRequest getSwerveRequest() {
     Rotation2d offsetRotation = getYawToSpeaker();
-    double rotateOutput = rotSpeedPidController.calculate(offsetRotation.getRadians());
+    double rotateOutput = rotationalPIDController.calculate(offsetRotation.getRadians());
 
     return swerveRequest
         .withVelocityX(xVelocitySupplier.getAsDouble())
@@ -100,9 +102,10 @@ public class SpeakerAimCommand extends Command {
   /** Returns true if the PID controller indicates we are aimed. */
   @Override
   public boolean isFinished() {
-    return endless ? false : rotSpeedPidController.atSetpoint();
+    return endless ? false : rotationalPIDController.atSetpoint();
   }
 
+  /** Stops any robot movement */
   @Override
   public void end(boolean interrupted) {
     drivetrain.setControl(new SwerveRequest.Idle());

@@ -14,6 +14,7 @@ import edu.wpi.first.wpilibj2.command.Subsystem;
 import frc.bearbotics.fms.AllianceColor;
 import frc.bearbotics.fms.AllianceReadyListener;
 import frc.robot.Vision;
+import frc.robot.constants.AutoConstants;
 import frc.robot.generated.TunerConstants;
 import java.util.Arrays;
 import java.util.function.Supplier;
@@ -26,10 +27,14 @@ import org.photonvision.EstimatedRobotPose;
  */
 public class CommandSwerveDrivetrain extends SwerveDrivetrain
     implements Subsystem, AllianceReadyListener {
-
+  /* Vision class for pose estimation */
   private final Vision vision = new Vision();
+
+  /* Field-oriented rotation offsets for the respective alliance.  */
   private final Rotation2d blueAllianceRotation = Rotation2d.fromDegrees(0);
   private final Rotation2d redAllianceRotation = Rotation2d.fromDegrees(180);
+
+  /* Swerve request for pathplanner */
   private final SwerveRequest.ApplyChassisSpeeds autoRequest =
       new SwerveRequest.ApplyChassisSpeeds();
 
@@ -90,8 +95,8 @@ public class CommandSwerveDrivetrain extends SwerveDrivetrain
         this::getCurrentRobotChassisSpeeds,
         this::setChassisSpeeds,
         new HolonomicPathFollowerConfig(
-            new PIDConstants(1),
-            new PIDConstants(1),
+            AutoConstants.HolonomicPathFollower.TRANSLATION_PID_CONSTANTS,
+            AutoConstants.HolonomicPathFollower.ROTATIONAL_PID_CONSTANTS,
             TunerConstants.kSpeedAt12VoltsMps,
             driveBaseRadius,
             new ReplanningConfig()),

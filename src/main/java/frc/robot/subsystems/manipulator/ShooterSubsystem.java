@@ -26,12 +26,12 @@ public class ShooterSubsystem extends SubsystemBase {
   private RelativeEncoder upperShooterMotorEncoder;
   private RelativeEncoder lowerShooterMotorEncoder;
 
-  private double targetVelocity;
-
   private final QuadraticCurveInterpolator velocityInterpolator =
       new QuadraticCurveInterpolator(ShooterConstants.SHOOT_ANGLE_MAP);
   private final double MAX_DISTANCE = Collections.max(ShooterConstants.SHOOT_ANGLE_MAP.keySet());
   private final double MIN_DISTANCE = Collections.min(ShooterConstants.SHOOT_ANGLE_MAP.keySet());
+
+  private double targetVelocity;
 
   public ShooterSubsystem() {
     configureMotors();
@@ -132,6 +132,25 @@ public class ShooterSubsystem extends SubsystemBase {
   }
 
   /**
+   * Set the target velocity for the shooter
+   *
+   * @param position An enum representing the elevator position
+   */
+  public void setVelocity(ShooterVelocity velocity) {
+    setVelocity(velocity.getVelocity());
+  }
+
+  /**
+   * Set the interpolated velocity of the shooter from a supplied distance
+   *
+   * @param distance Distance to the target
+   */
+  public void setVelocityFromDistance(double distance) {
+    setVelocity(
+        velocityInterpolator.calculate(MathUtil.clamp(distance, MIN_DISTANCE, MAX_DISTANCE)));
+  }
+
+  /**
    * Set the target velocity for the shooting motor and adjust the PID controller accordingly.
    *
    * @param velocity The desired velocity for the shooter motor.
@@ -141,15 +160,6 @@ public class ShooterSubsystem extends SubsystemBase {
 
     upperShooterMotor.getPIDController().setReference(velocity, CANSparkMax.ControlType.kVelocity);
     lowerShooterMotor.getPIDController().setReference(velocity, CANSparkMax.ControlType.kVelocity);
-  }
-
-  public void setVelocity(ShooterVelocity velocity) {
-    setVelocity(velocity.getVelocity());
-  }
-
-  public void setVelocityFromDistance(double distance) {
-    setVelocity(
-        velocityInterpolator.calculate(MathUtil.clamp(distance, MIN_DISTANCE, MAX_DISTANCE)));
   }
 
   /** Stop both shooter motors. */

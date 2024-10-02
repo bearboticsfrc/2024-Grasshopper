@@ -5,7 +5,7 @@ import edu.wpi.first.apriltag.AprilTagFieldLayout.OriginPosition;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import frc.bearbotics.fms.AllianceColor;
@@ -117,26 +117,17 @@ public class FieldPositions {
     if (AllianceColor.getAlliance().equals(Alliance.Red)) {
       tagId = VisionConstants.TAG.RED_SPEAKER_CENTER.getValue();
     }
-    return getTagPose(tagId);
+    return getTagPose(tagId).plus(getSpeakerOffset());
   }
 
-  public Pose2d getSpeakerOffset() {
-    int tagId = VisionConstants.TAG.BLUE_SPEAKER_LEFT.getValue();
+  public Transform2d getSpeakerOffset() {
+    Transform2d transform = new Transform2d(0.2, 0, new Rotation2d());
 
     if (AllianceColor.getAlliance().equals(Alliance.Red)) {
-      tagId = VisionConstants.TAG.RED_SPEAKER_RIGHT.getValue();
-    }
-    return getTagPose(tagId);
-  }
-
-  public Translation2d getSpeakerTranslation() {
-    int tagId = VisionConstants.TAG.BLUE_SPEAKER_CENTER.getValue();
-
-    if (AllianceColor.getAlliance().equals(Alliance.Red)) {
-      tagId = VisionConstants.TAG.RED_SPEAKER_CENTER.getValue();
+      transform = new Transform2d(-0.2, 0, new Rotation2d());
     }
 
-    return getTagPose(tagId).getTranslation();
+    return transform;
   }
 
   public Pose2d getAmp() {

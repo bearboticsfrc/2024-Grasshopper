@@ -5,6 +5,7 @@ import com.revrobotics.CANSparkBase.SoftLimitDirection;
 import com.revrobotics.CANSparkLowLevel;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -16,6 +17,7 @@ import frc.bearbotics.motor.MotorSoftLimit;
 import frc.robot.constants.RobotConstants;
 import frc.robot.constants.manipulator.ElevatorConstants;
 import frc.robot.constants.manipulator.ElevatorConstants.ElevatorPosition;
+import java.util.Collections;
 
 public class ElevatorSubsystem extends SubsystemBase {
   private final boolean SHUFFLEBOARD_ENABLED = true;
@@ -30,8 +32,11 @@ public class ElevatorSubsystem extends SubsystemBase {
 
   private double targetPosition;
 
-  private QuadraticCurveInterpolator angleInterpolator =
+  private final QuadraticCurveInterpolator angleInterpolator =
       new QuadraticCurveInterpolator(ElevatorConstants.SHOOT_ANGLE_MAP);
+
+  private final double MAX_DISTANCE = Collections.max(ElevatorConstants.SHOOT_ANGLE_MAP.keySet());
+  private final double MIN_DISTANCE = Collections.min(ElevatorConstants.SHOOT_ANGLE_MAP.keySet());
 
   public ElevatorSubsystem() {
     configureMotors();
@@ -114,7 +119,7 @@ public class ElevatorSubsystem extends SubsystemBase {
    * @param distance Distance to the speaker
    */
   public void setPositionFromDistance(double distance) {
-    setPosition(angleInterpolator.calculate(distance));
+    setPosition(angleInterpolator.calculate(MathUtil.clamp(distance, MIN_DISTANCE, MAX_DISTANCE)));
   }
 
   /**
@@ -162,8 +167,8 @@ public class ElevatorSubsystem extends SubsystemBase {
    * @return True if the arm elevator motor is at its target position, false otherwise
    */
   public boolean atTargetPosition() {
-    return Math.abs(targetPosition - elevatorMotorEncoder.getPosition())
-        < ElevatorConstants.POSITION_TOLERANCE;
+    return MathUtil.isNear(
+        targetPosition, elevatorMotorEncoder.getPosition(), ElevatorConstants.POSITION_TOLERANCE);
   }
 
   /** Max the encoder for bypassing the reverse soft limit. */

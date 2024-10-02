@@ -14,6 +14,7 @@ import frc.bearbotics.util.ProcessedJoystick;
 import frc.bearbotics.util.ProcessedJoystick.JoystickAxis;
 import frc.bearbotics.util.ProcessedJoystick.ThrottleProfile;
 import frc.robot.commands.AutoShootCommand;
+import frc.robot.commands.SpeakerAimCommand;
 import frc.robot.constants.DriveConstants;
 import frc.robot.constants.RobotConstants;
 import frc.robot.constants.VisionConstants;
@@ -52,7 +53,7 @@ public class RobotContainer {
   }
 
   private void setupShuffleboardTab(ShuffleboardTab shuffleboardTab) {
-    shuffleboardTab.add("Home Elevator", manipulatorSubsystem.getElevatorHomeCommand());
+    shuffleboardTab.add("Home Elevator", manipulatorSubsystem.homeElevator());
     shuffleboardTab.addDouble("Distance to Speaker", this::getDistanceToSpeaker);
     shuffleboardTab.addDouble(
         "Yaw to Speaker Center Pose",
@@ -82,13 +83,21 @@ public class RobotContainer {
 
     driverJoystick
         .leftBumper()
-        .whileTrue(manipulatorSubsystem.getIntakeCommand())
-        .onFalse(manipulatorSubsystem.getIntakeStopCommand());
+        .whileTrue(manipulatorSubsystem.intakeNote())
+        .onFalse(manipulatorSubsystem.stopIntake());
+
+    driverJoystick
+        .x()
+        .whileTrue(new AutoShootCommand(drivetrain, manipulatorSubsystem))
+        .onFalse(manipulatorSubsystem.stopManipulator());
 
     driverJoystick
         .rightBumper()
-        .whileTrue(new AutoShootCommand(drivetrain, manipulatorSubsystem))
-        .onFalse(manipulatorSubsystem.getManipulatorStopCommand());
+        .whileTrue(
+            new SpeakerAimCommand(
+                drivetrain,
+                () -> processedJoystick.get(JoystickAxis.Ly),
+                () -> processedJoystick.get(JoystickAxis.Lx)));
   }
 
   /**

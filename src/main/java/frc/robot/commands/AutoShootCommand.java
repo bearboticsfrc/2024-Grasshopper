@@ -28,18 +28,18 @@ public class AutoShootCommand extends SequentialCommandGroup {
     this.manipulatorSubsystem = manipulatorSubsystem;
     this.targetPoseSupplier = FieldPositions.getInstance()::getSpeakerCenter;
 
-    addCommands(getAutoAimCommand(), getShootCommand());
+    addCommands(getSpeakerAimCommand(), getShootCommand());
     addRequirements(drivetrain, manipulatorSubsystem);
   }
 
-  private Command getAutoAimCommand() {
-    return new AutoAimCommand(drivetrain, targetPoseSupplier);
+  private Command getSpeakerAimCommand() {
+    return new SpeakerAimCommand(drivetrain);
   }
 
   private Command getShootCommand() {
     return Commands.deferredProxy(
         () ->
-            manipulatorSubsystem.getShootCommand(
+            manipulatorSubsystem.distanceShoot(
                 () ->
                     PhotonUtils.getDistanceToPose(drivetrain.getPose(), targetPoseSupplier.get())));
   }

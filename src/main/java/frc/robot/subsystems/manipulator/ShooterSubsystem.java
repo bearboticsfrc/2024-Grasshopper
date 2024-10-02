@@ -5,6 +5,7 @@ import com.revrobotics.CANSparkFlex;
 import com.revrobotics.CANSparkLowLevel;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.bearbotics.math.QuadraticCurveInterpolator;
@@ -14,6 +15,7 @@ import frc.bearbotics.motor.MotorPidBuilder;
 import frc.robot.constants.RobotConstants;
 import frc.robot.constants.manipulator.ShooterConstants;
 import frc.robot.constants.manipulator.ShooterConstants.ShooterVelocity;
+import java.util.Collections;
 
 public class ShooterSubsystem extends SubsystemBase {
   private final boolean SHUFFLEBOARD_ENABLED = true;
@@ -26,8 +28,10 @@ public class ShooterSubsystem extends SubsystemBase {
 
   private double targetVelocity;
 
-  private QuadraticCurveInterpolator velocityInterpolator =
+  private final QuadraticCurveInterpolator velocityInterpolator =
       new QuadraticCurveInterpolator(ShooterConstants.SHOOT_ANGLE_MAP);
+  private final double MAX_DISTANCE = Collections.max(ShooterConstants.SHOOT_ANGLE_MAP.keySet());
+  private final double MIN_DISTANCE = Collections.min(ShooterConstants.SHOOT_ANGLE_MAP.keySet());
 
   public ShooterSubsystem() {
     configureMotors();
@@ -117,9 +121,14 @@ public class ShooterSubsystem extends SubsystemBase {
    * @return True if the shooter motor is at the target velocity, false otherwise.
    */
   public boolean atTargetVelocity() {
-    return targetVelocity
-            - (lowerShooterMotorEncoder.getVelocity() + upperShooterMotorEncoder.getVelocity()) / 2
-        < ShooterConstants.VELOCITY_TOLERANCE;
+    return MathUtil.isNear(
+            targetVelocity,
+            upperShooterMotorEncoder.getVelocity(),
+            ShooterConstants.VELOCITY_TOLERANCE)
+        && MathUtil.isNear(
+            targetVelocity,
+            lowerShooterMotorEncoder.getVelocity(),
+            ShooterConstants.VELOCITY_TOLERANCE);
   }
 
   /**
@@ -127,19 +136,20 @@ public class ShooterSubsystem extends SubsystemBase {
    *
    * @param velocity The desired velocity for the shooter motor.
    */
-  public void set(double velocity) {
+  public void setVelocity(double velocity) {
     targetVelocity = velocity;
 
     upperShooterMotor.getPIDController().setReference(velocity, CANSparkMax.ControlType.kVelocity);
     lowerShooterMotor.getPIDController().setReference(velocity, CANSparkMax.ControlType.kVelocity);
   }
 
-  public void set(ShooterVelocity velocity) {
-    set(velocity.getVelocity());
+  public void setVelocity(ShooterVelocity velocity) {
+    setVelocity(velocity.getVelocity());
   }
 
   public void setVelocityFromDistance(double distance) {
-    set(velocityInterpolator.calculate(distance));
+    setVelocity(
+        velocityInterpolator.calculate(MathUtil.clamp(distance, MIN_DISTANCE, MAX_DISTANCE)));
   }
 
   /** Stop both shooter motors. */

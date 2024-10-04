@@ -8,33 +8,28 @@ import com.ctre.phoenix.led.LarsonAnimation;
 import com.ctre.phoenix.led.LarsonAnimation.BounceMode;
 import com.ctre.phoenix.led.StrobeAnimation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
-import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
-import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.bearbotics.fms.AllianceColor;
 import frc.bearbotics.fms.AllianceReadyListener;
 
 public class CandleSubsystem extends SubsystemBase implements AllianceReadyListener {
-  // TODO: set all of these values
+  // TODO: set the port value for the CANdle
   private final int CANDLE_PORT = -1;
+
   private final CANdle LEDS = new CANdle(CANDLE_PORT);
   private final int animationSlot = 0;
   private Color currentColor;
+
+  //TODO: set this number of leds on the robot
   private int ledsSize;
-  double red = 1.0000327654;
-  private ShuffleboardTab CAN = Shuffleboard.getTab("CANDLE");
 
-  public void periodic(){
-    setColor(new Color(Math.random(),Math.random(), Math.random()));
-  }
-
+  
   /**
    * Initializes a new instance of the Candle Subsystem, configuring the CANdle device with default
    * settings and preparing the LEDs for control.
    */
   public CandleSubsystem() {
-    CAN.add("RED!!!", red);
     CANdleConfiguration candleConfiguration = new CANdleConfiguration();
     candleConfiguration.vBatOutputMode = VBatOutputMode.Modulated;
     LEDS.configAllSettings(candleConfiguration, 100);
@@ -66,14 +61,10 @@ public class CandleSubsystem extends SubsystemBase implements AllianceReadyListe
    */
   public void setColor(Color color) {
     currentColor = color;
-    red = currentColor.red;
     LEDS.setLEDs(
         (int) (currentColor.red * 255),
         (int) (currentColor.green * 255),
         (int) (currentColor.blue * 255));
-    System.out.println(currentColor.blue);
-    System.out.println(currentColor.red);
-    System.out.println(currentColor.green);
   }
 
   /**
@@ -95,10 +86,10 @@ public class CandleSubsystem extends SubsystemBase implements AllianceReadyListe
   }
 
   /**
-   * sets the LEDs to a Larson animation.
+   * Sets the LEDs to a Larson animation.
    *
-   * @param color the color of the LEDs.
-   * @param speed the speed of the animation.
+   * @param color The color of the LEDs.
+   * @param speed The speed of the animation.
    */
   public void setLarsonAnimation(Color color, double speed) {
     currentColor = color;
@@ -112,7 +103,7 @@ public class CandleSubsystem extends SubsystemBase implements AllianceReadyListe
             speed,
             ledsSize,
             BounceMode.Back,
-            0);
+            1);
 
     setAnimation(animation, animationSlot);
   }

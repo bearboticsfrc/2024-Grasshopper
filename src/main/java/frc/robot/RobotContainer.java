@@ -13,7 +13,6 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.constants.DriveConstants;
 import frc.robot.subsystems.SwerveSubsystem;
-import frc.robot.subsystems.candle.CandleSubsystem;
 
 import java.io.File;
 import java.io.IOException;
@@ -29,8 +28,7 @@ public class RobotContainer {
 
   public RobotContainer() {
     configureSwerveDrive();
-    CandleSubsystem t = new CandleSubsystem();
-    //configureBindings();
+    configureBindings();
   }
 
   /*

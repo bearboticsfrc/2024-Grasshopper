@@ -21,10 +21,9 @@ public class CandleSubsystem extends SubsystemBase implements AllianceReadyListe
   private final int animationSlot = 0;
   private Color currentColor;
 
-  //TODO: set this number of leds on the robot
+  // TODO: set this number of leds on the robot
   private int ledsSize;
 
-  
   /**
    * Initializes a new instance of the Candle Subsystem, configuring the CANdle device with default
    * settings and preparing the LEDs for control.
@@ -36,10 +35,7 @@ public class CandleSubsystem extends SubsystemBase implements AllianceReadyListe
     AllianceColor.addListener(this);
   }
 
-  /**
-   * updates the current Alliance.
-   * @Override
-   */
+  /** updates the current Alliance. @Override */
   public void updateAlliance(Alliance alliance) {
 
     if (currentColor == null || currentColor == Color.kRed || currentColor == Color.kBlue) {
@@ -47,9 +43,7 @@ public class CandleSubsystem extends SubsystemBase implements AllianceReadyListe
     }
   }
 
-  /** 
-   * Clears the animations and turns the LEDs off. 
-  */
+  /** Clears the animations and turns the LEDs off. */
   public void clearSegment() {
     LEDS.clearAnimation(animationSlot);
     setColor(Color.kBlack);
@@ -57,6 +51,7 @@ public class CandleSubsystem extends SubsystemBase implements AllianceReadyListe
 
   /**
    * Sets the color of the entire LED strip to the specified color.
+   *
    * @param color the color of the leds
    */
   public void setColor(Color color) {

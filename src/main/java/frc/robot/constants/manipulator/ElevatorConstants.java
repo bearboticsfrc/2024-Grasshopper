@@ -39,7 +39,8 @@ public abstract class ElevatorConstants {
   }
 
   public enum ElevatorPosition {
-    HOME(0);
+    HOME(0),
+    SPEAKER(15);
 
     private double position;
 

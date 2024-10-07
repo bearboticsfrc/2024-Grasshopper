@@ -72,22 +72,27 @@ public class RobotContainer {
         .onFalse(Commands.runOnce(() -> setThrottleProfile(ThrottleProfile.NORMAL)));
 
     driverJoystick
-        .leftBumper()
+        .leftTrigger()
         .whileTrue(manipulator.intakeNote())
         .onFalse(manipulator.stopIntake());
 
     driverJoystick
-        .x()
-        .whileTrue(manipulator.distanceShoot(this::getDistanceToSpeaker))
-        .onFalse(manipulator.stopManipulator());
-
-    driverJoystick
-        .rightBumper()
+        .rightTrigger()
         .whileTrue(
             new SpeakerAimCommand(
                 drivetrain,
                 () -> processedJoystick.get(JoystickAxis.Ly),
                 () -> processedJoystick.get(JoystickAxis.Lx)));
+
+    driverJoystick
+        .leftBumper()
+        .whileTrue(manipulator.subwooferShoot())
+        .onFalse(manipulator.stopManipulator());
+
+    driverJoystick
+        .rightBumper()
+        .whileTrue(manipulator.distanceShoot(this::getDistanceToSpeaker))
+        .onFalse(manipulator.stopManipulator());
   }
 
   /**

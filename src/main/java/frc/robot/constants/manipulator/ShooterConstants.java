@@ -46,7 +46,7 @@ public abstract class ShooterConstants {
 
   public enum ShooterVelocity {
     OFF(0),
-    BLOOP(1000);
+    SPEAKER(2800);
 
     private double velocity;
 

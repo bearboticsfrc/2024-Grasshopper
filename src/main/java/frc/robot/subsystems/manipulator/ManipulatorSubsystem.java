@@ -124,7 +124,7 @@ public class ManipulatorSubsystem extends SubsystemBase {
    * @return The command to stop the elevator.
    */
   public Command stopElevator() {
-    return elevator.runOnce(() -> elevator.stopMotor());
+    return elevator.runOnce(() -> elevator.setPosition(ElevatorPosition.HOME));
   }
 
   /**
@@ -158,6 +158,14 @@ public class ManipulatorSubsystem extends SubsystemBase {
         stopManipulator());
   }
 
+  public Command subwooferShoot() {
+    return Commands.sequence(
+        runShooterAndElevator(ShooterVelocity.SPEAKER, ElevatorPosition.SPEAKER),
+        waitForShooterAndElevator(),
+        feedNote(),
+        stopManipulator());
+  }
+
   /**
    * Returns a command to run the shooter and elevator subsystems based on a supplied distance.
    *
@@ -168,6 +176,20 @@ public class ManipulatorSubsystem extends SubsystemBase {
     return Commands.parallel(
         shooter.runOnce(() -> shooter.setVelocityFromDistance(distanceSupplier.getAsDouble())),
         elevator.runOnce(() -> elevator.setPositionFromDistance(distanceSupplier.getAsDouble())));
+  }
+
+  /**
+   * Returns a command to run the shooter and elevator subsystems based on a provided velocity and
+   * position
+   *
+   * @param velocity
+   * @param position
+   * @return The command to run the shooter and elevator.
+   */
+  private Command runShooterAndElevator(ShooterVelocity velocity, ElevatorPosition position) {
+    return Commands.parallel(
+        shooter.runOnce(() -> shooter.setVelocity(velocity)),
+        elevator.runOnce(() -> elevator.setPosition(position)));
   }
 
   /**

@@ -1,7 +1,6 @@
 package frc.robot.commands;
 
 import com.ctre.phoenix6.mechanisms.swerve.SwerveRequest;
-import com.ctre.phoenix6.mechanisms.swerve.SwerveRequest.FieldCentric;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -9,7 +8,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import frc.bearbotics.location.FieldPositions;
 import frc.robot.constants.commands.SpeakerAimConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
-import java.util.function.*;
+import java.util.function.DoubleSupplier;
 import org.photonvision.PhotonUtils;
 
 public class SpeakerAimCommand extends Command {
@@ -18,7 +17,9 @@ public class SpeakerAimCommand extends Command {
   private final PIDController rotationalPIDController =
       new PIDController(SpeakerAimConstants.RotationPid.P, 0, 0);
 
-  private final SwerveRequest.FieldCentric swerveRequest = new FieldCentric();
+  private final SwerveRequest.FieldCentric swerveRequest =
+      new SwerveRequest.FieldCentric().withDeadband(0.1);
+  private final SwerveRequest.Idle idleSwerveRequest = new SwerveRequest.Idle();
 
   private DoubleSupplier xVelocitySupplier = () -> 0;
   private DoubleSupplier yVelocitySupplier = () -> 0;
@@ -63,10 +64,12 @@ public class SpeakerAimCommand extends Command {
     addRequirements(drivetrain);
   }
 
-  /** Initalize, set the speaker pose */
+  /** Initalize, set the speaker pose, stop the robot */
   @Override
   public void initialize() {
     speakerPose = FieldPositions.getInstance().getSpeakerCenter();
+
+    drivetrain.setControl(idleSwerveRequest);
   }
 
   /** Align the robot's heading with the speaker's pose */
@@ -108,6 +111,6 @@ public class SpeakerAimCommand extends Command {
   /** Stops any robot movement */
   @Override
   public void end(boolean interrupted) {
-    drivetrain.setControl(new SwerveRequest.Idle());
+    drivetrain.setControl(idleSwerveRequest);
   }
 }

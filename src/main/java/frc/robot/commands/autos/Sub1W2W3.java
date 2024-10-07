@@ -27,8 +27,7 @@ public class Sub1W2W3 {
       DoubleSupplier distanceToSpeaker) {
     return Commands.sequence(
         manipulator.distanceShoot(distanceToSpeaker),
-        AutoBuilder.followPath(SUB1_W2),
-        manipulator.intakeNote(),
+        Commands.parallel(AutoBuilder.followPath(SUB1_W2), manipulator.intakeNote()),
         manipulator.distanceShoot(distanceToSpeaker));
   }
 }

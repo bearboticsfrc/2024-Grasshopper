@@ -8,6 +8,7 @@ import frc.robot.constants.manipulator.ElevatorConstants.ElevatorPosition;
 import frc.robot.constants.manipulator.IntakeConstants;
 import frc.robot.constants.manipulator.IntakeConstants.IntakeVelocity;
 import frc.robot.constants.manipulator.ShooterConstants.ShooterVelocity;
+import java.util.function.DoubleSupplier;
 
 public class ManipulatorSubsystem extends SubsystemBase {
   private final IntakeSubsystem intake;
@@ -15,7 +16,7 @@ public class ManipulatorSubsystem extends SubsystemBase {
   private final ElevatorSubsystem elevator;
 
   /**
-   * Constructor for the ManipulatorSubsystem class. Initializes intake, and shooter/aimer
+   * Constructor for the ManipulatorSubsystem class. Initializes the intake, shooter, and elevator
    * subsystems.
    */
   public ManipulatorSubsystem() {
@@ -25,14 +26,22 @@ public class ManipulatorSubsystem extends SubsystemBase {
   }
 
   /**
-   * Get the elevator subsytem home command
+   * Returns a command to home the elevator subsystem. This command sequence will:
    *
-   * @return The command
+   * <ol>
+   *   <li>Max out the elevator encoder
+   *   <li>Set the elevator to the homing speed
+   *   <li>Wait until the lower limit is reached
+   *   <li>Stop the motor
+   *   <li>Tare the encoder to reset its position
+   * </ol>
+   *
+   * @return The command to home the elevator.
    */
-  public Command getElevatorHomeCommand() {
+  public Command homeElevator() {
     return Commands.sequence(
             elevator.runOnce(elevator::maxEncoder),
-            elevator.runOnce(() -> elevator.set(ElevatorConstants.HOMING_SPEED)),
+            elevator.runOnce(() -> elevator.setSpeed(ElevatorConstants.HOMING_SPEED)),
             Commands.waitUntil(elevator::isAtLowerLimit),
             elevator.runOnce(elevator::stopMotor),
             elevator.runOnce(elevator::tareEncoder))
@@ -40,15 +49,23 @@ public class ManipulatorSubsystem extends SubsystemBase {
   }
 
   /**
-   * Get the intake command
+   * Returns a command to intake a note. If a note is already in the shooter, the command will idle.
+   * Otherwise, it will:
    *
-   * @return The command
+   * <ol>
+   *   <li>Set the intake to full velocity
+   *   <li>Wait until the note is detected in the shooter
+   *   <li>Wait for a brief stop delay
+   *   <li>Stop the intake motor
+   * </ol>
+   *
+   * @return The command to intake a note.
    */
-  public Command getIntakeCommand() {
+  public Command intakeNote() {
     return Commands.either(
         Commands.idle(),
         Commands.sequence(
-            intake.runOnce(() -> intake.set(IntakeVelocity.FULL)),
+            intake.runOnce(() -> intake.setVelocity(IntakeVelocity.FULL)),
             Commands.waitUntil(intake::isNoteInShooter),
             Commands.waitSeconds(IntakeConstants.STOP_DELAY),
             intake.runOnce(intake::stopMotor)),
@@ -56,59 +73,169 @@ public class ManipulatorSubsystem extends SubsystemBase {
   }
 
   /**
-   * Get the intake set command
+   * Returns a command to feed a note. This command will:
    *
-   * @param velocity The velocity to set the intake motors to
-   * @return The command
+   * <ol>
+   *   <li>Set the intake to full velocity
+   *   <li>Wait for 0.25 seconds
+   *   <li>Stop the manipulator systems (intake, shooter, and elevator)
+   * </ol>
+   *
+   * @return The command to feed a note.
    */
-  public Command getIntakeSetCommand(IntakeVelocity velocity) {
-    return intake.runOnce(() -> intake.set(velocity));
-  }
-
-  public Command getIntakeStopCommand() {
-    return intake.runOnce(() -> intake.stopMotor());
-  }
-
-  public Command getShooterStopCommand() {
-    return shooter.runOnce(() -> shooter.stopMotor());
-  }
-
-  public Command getElevatorStopCommand() {
-    return elevator.runOnce(() -> elevator.stopMotor());
+  public Command feedNote() {
+    return Commands.sequence(
+        setIntake(IntakeVelocity.FULL),
+        Commands.waitSeconds(IntakeConstants.FEED_DELAY),
+        stopIntake());
   }
 
   /**
-   * Get the elevator subsytem set command
+   * Returns a command to set the intake to a specific velocity.
    *
-   * @param position The position to set the elevator to
-   * @return The command
+   * @param velocity The velocity to set the intake motors to.
+   * @return The command to set the intake.
    */
-  public Command getElevatorSetCommand(ElevatorPosition position) {
+  public Command setIntake(IntakeVelocity velocity) {
+    return intake.runOnce(() -> intake.setVelocity(velocity));
+  }
+
+  /**
+   * Returns a command to stop the intake.
+   *
+   * @return The command to stop the intake.
+   */
+  public Command stopIntake() {
+    return intake.runOnce(() -> intake.stopMotor());
+  }
+
+  /**
+   * Returns a command to stop the shooter.
+   *
+   * @return The command to stop the shooter.
+   */
+  public Command stopShooter() {
+    return shooter.runOnce(() -> shooter.stopMotor());
+  }
+
+  /**
+   * Returns a command to stop the elevator.
+   *
+   * @return The command to stop the elevator.
+   */
+  public Command stopElevator() {
+    return elevator.runOnce(() -> elevator.setPosition(ElevatorPosition.HOME));
+  }
+
+  /**
+   * Returns a command to stop all manipulator subsystems (intake, shooter, and elevator).
+   *
+   * @return The command to stop all manipulator subsystems.
+   */
+  public Command stopManipulator() {
+    return Commands.parallel(stopIntake(), stopShooter(), stopElevator());
+  }
+
+  /**
+   * Returns a command to shoot based on distance. This sequence will:
+   *
+   * <ol>
+   *   <li>Run the shooter and elevator subsystems to set their velocity and position based on
+   *       distance
+   *   <li>Wait for the shooter and elevator to reach their target
+   *   <li>Feed the note
+   *   <li>Stop the manipulator
+   * </ol>
+   *
+   * @param distanceSupplier A supplier for the distance to adjust the shooter and elevator.
+   * @return The command to shoot based on distance.
+   */
+  public Command distanceShoot(DoubleSupplier distanceSupplier) {
     return Commands.sequence(
-        elevator.runOnce(() -> elevator.set(position)),
+        runShooterAndElevator(distanceSupplier),
+        waitForShooterAndElevator(),
+        feedNote(),
+        stopManipulator());
+  }
+
+  public Command subwooferShoot() {
+    return Commands.sequence(
+        runShooterAndElevator(ShooterVelocity.SPEAKER, ElevatorPosition.SPEAKER),
+        waitForShooterAndElevator(),
+        feedNote(),
+        stopManipulator());
+  }
+
+  /**
+   * Returns a command to run the shooter and elevator subsystems based on a supplied distance.
+   *
+   * @param distanceSupplier A supplier for the distance to adjust the shooter and elevator.
+   * @return The command to run the shooter and elevator.
+   */
+  private Command runShooterAndElevator(DoubleSupplier distanceSupplier) {
+    return Commands.parallel(
+        shooter.runOnce(() -> shooter.setVelocityFromDistance(distanceSupplier.getAsDouble())),
+        elevator.runOnce(() -> elevator.setPositionFromDistance(distanceSupplier.getAsDouble())));
+  }
+
+  /**
+   * Returns a command to run the shooter and elevator subsystems based on a provided velocity and
+   * position
+   *
+   * @param velocity
+   * @param position
+   * @return The command to run the shooter and elevator.
+   */
+  private Command runShooterAndElevator(ShooterVelocity velocity, ElevatorPosition position) {
+    return Commands.parallel(
+        shooter.runOnce(() -> shooter.setVelocity(velocity)),
+        elevator.runOnce(() -> elevator.setPosition(position)));
+  }
+
+  /**
+   * Returns a command that waits for both the shooter and elevator to reach their target velocity
+   * and position.
+   *
+   * @return The command to wait for the shooter and elevator.
+   */
+  private Command waitForShooterAndElevator() {
+    return Commands.parallel(
+        Commands.waitUntil(shooter::atTargetVelocity),
         Commands.waitUntil(elevator::atTargetPosition));
   }
 
   /**
-   * Get the elevator subsytem set command
+   * Returns a command to set the elevator position.
    *
-   * @param position The position to set the elevator to
-   * @return The command
+   * @param position The position to set the elevator to.
+   * @return The command to set the elevator.
    */
-  public Command getElevatorSetCommand(double speed) {
-    return elevator.runOnce(() -> elevator.set(speed));
+  public Command setElevator(ElevatorPosition position) {
+    return Commands.sequence(
+        elevator.runOnce(() -> elevator.setPosition(position)),
+        Commands.waitUntil(elevator::atTargetPosition));
   }
 
   /**
-   * Get the shooter subsytem set command
+   * Returns a command to set the elevator speed.
    *
-   * @param velocity The velocity to set the shooter to
-   * @return The command
+   * @param speed The speed to set the elevator to.
+   * @return The command to set the elevator.
    */
-  public Command getShooterSetCommand(ShooterVelocity velocity) {
+  public Command setElevator(double speed) {
+    return elevator.runOnce(() -> elevator.setSpeed(speed));
+  }
+
+  /**
+   * Returns a command to set the shooter velocity.
+   *
+   * @param velocity The velocity to set the shooter to.
+   * @return The command to set the shooter.
+   */
+  public Command setShooter(ShooterVelocity velocity) {
     return Commands.sequence(
-        shooter.runOnce(() -> shooter.set(velocity)),
+        shooter.runOnce(() -> shooter.setVelocity(velocity)),
         Commands.waitUntil(shooter::atTargetVelocity),
-        getIntakeSetCommand(IntakeVelocity.FULL));
+        setIntake(IntakeVelocity.FULL));
   }
 }

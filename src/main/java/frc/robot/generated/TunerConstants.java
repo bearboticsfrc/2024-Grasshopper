@@ -65,7 +65,6 @@ public class TunerConstants {
   private static final CANcoderConfiguration cancoderInitialConfigs = new CANcoderConfiguration();
   // Configs for the Pigeon 2; leave this null to skip applying Pigeon 2 configs
   private static final Pigeon2Configuration pigeonConfigs = null;
-
   // Theoretical free speed (m/s) at 12v applied output;
   // This needs to be tuned to your individual robot
   public static final double kSpeedAt12VoltsMps = 4.95;
@@ -84,13 +83,6 @@ public class TunerConstants {
   private static final String kCANbusName = "drive";
   private static final int kPigeonId = 24;
 
-  // These are only used for simulation
-  private static final double kSteerInertia = 0.00001;
-  private static final double kDriveInertia = 0.001;
-  // Simulated voltage necessary to overcome friction
-  private static final double kSteerFrictionVoltage = 0.25;
-  private static final double kDriveFrictionVoltage = 0.25;
-
   private static final SwerveDrivetrainConstants DrivetrainConstants =
       new SwerveDrivetrainConstants()
           .withCANbusName(kCANbusName)
@@ -108,10 +100,6 @@ public class TunerConstants {
           .withSteerMotorClosedLoopOutput(steerClosedLoopOutput)
           .withDriveMotorClosedLoopOutput(driveClosedLoopOutput)
           .withSpeedAt12VoltsMps(kSpeedAt12VoltsMps)
-          .withSteerInertia(kSteerInertia)
-          .withDriveInertia(kDriveInertia)
-          .withSteerFrictionVoltage(kSteerFrictionVoltage)
-          .withDriveFrictionVoltage(kDriveFrictionVoltage)
           .withFeedbackSource(SteerFeedbackType.FusedCANcoder)
           .withCouplingGearRatio(kCoupleRatio)
           .withDriveMotorInitialConfigs(driveInitialConfigs)

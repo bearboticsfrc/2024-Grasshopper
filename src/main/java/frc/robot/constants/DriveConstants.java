@@ -25,5 +25,11 @@ public class DriveConstants {
           .withRotationalDeadband(ROTATIONAL_DEADBAND)
           .withDriveRequestType(DriveRequestType.OpenLoopVoltage);
 
+  // Field centric swerve request for autonomous rotational control
+  public static final SwerveRequest.FieldCentric FIELD_CENTRIC_AUTO_SWERVE_REQUEST =
+      new SwerveRequest.FieldCentric()
+          .withDeadband(LINEAR_DEADBAND)
+          .withDriveRequestType(DriveRequestType.OpenLoopVoltage);
+
   public static final Telemetry LOGGER = new Telemetry(DriveConstants.MAX_VELOCITY);
 }

@@ -5,9 +5,11 @@ import com.revrobotics.CANSparkBase.SoftLimitDirection;
 import com.revrobotics.CANSparkLowLevel;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.bearbotics.math.QuadraticCurveInterpolator;
 import frc.bearbotics.motor.MotorBuilder;
 import frc.bearbotics.motor.MotorConfig;
 import frc.bearbotics.motor.MotorPidBuilder;
@@ -15,6 +17,7 @@ import frc.bearbotics.motor.MotorSoftLimit;
 import frc.robot.constants.RobotConstants;
 import frc.robot.constants.manipulator.ElevatorConstants;
 import frc.robot.constants.manipulator.ElevatorConstants.ElevatorPosition;
+import java.util.Collections;
 
 public class ElevatorSubsystem extends SubsystemBase {
   private final boolean SHUFFLEBOARD_ENABLED = true;
@@ -28,6 +31,12 @@ public class ElevatorSubsystem extends SubsystemBase {
       new DigitalInput(ElevatorConstants.UPPER_LIMIT_SWITCH_CHANNEL);
 
   private double targetPosition;
+
+  private final QuadraticCurveInterpolator angleInterpolator =
+      new QuadraticCurveInterpolator(ElevatorConstants.SHOOT_ANGLE_MAP);
+
+  private final double MAX_DISTANCE = Collections.max(ElevatorConstants.SHOOT_ANGLE_MAP.keySet());
+  private final double MIN_DISTANCE = Collections.min(ElevatorConstants.SHOOT_ANGLE_MAP.keySet());
 
   public ElevatorSubsystem() {
     configureMotors();
@@ -96,25 +105,40 @@ public class ElevatorSubsystem extends SubsystemBase {
   }
 
   /**
-   * Set the target postition for the elevator driver
-   *
-   * @param position An enum representing the elevator position.
-   */
-  public void set(ElevatorPosition position) {
-    targetPosition = position.getPosition();
-
-    elevatorMotor
-        .getPIDController()
-        .setReference(position.getPosition(), CANSparkMax.ControlType.kPosition);
-  }
-
-  /**
    * Sets the speed of the elevator motor
    *
    * @param speed The speed of the elevator motor
    */
-  public void set(double speed) {
+  public void setSpeed(double speed) {
     elevatorMotor.set(speed);
+  }
+
+  /**
+   * Set the target postition for the elevator
+   *
+   * @param position An enum representing the elevator position
+   */
+  public void setPosition(ElevatorPosition position) {
+    setPosition(position.getPosition());
+  }
+
+  /**
+   * Set the interpolated angle of the elevator from a supplied distance
+   *
+   * @param distance Distance to the target
+   */
+  public void setPositionFromDistance(double distance) {
+    setPosition(angleInterpolator.calculate(MathUtil.clamp(distance, MIN_DISTANCE, MAX_DISTANCE)));
+  }
+
+  /**
+   * Set the position for the elevator
+   *
+   * @param position The target position
+   */
+  public void setPosition(double position) {
+    targetPosition = position;
+    elevatorMotor.getPIDController().setReference(position, CANSparkMax.ControlType.kPosition);
   }
 
   /** Stop the elevator motor */
@@ -148,8 +172,8 @@ public class ElevatorSubsystem extends SubsystemBase {
    * @return True if the arm elevator motor is at its target position, false otherwise
    */
   public boolean atTargetPosition() {
-    return Math.abs(targetPosition - elevatorMotorEncoder.getPosition())
-        < ElevatorConstants.POSITION_TOLERANCE;
+    return MathUtil.isNear(
+        targetPosition, elevatorMotorEncoder.getPosition(), ElevatorConstants.POSITION_TOLERANCE);
   }
 
   /** Max the encoder for bypassing the reverse soft limit. */

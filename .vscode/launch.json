@@ -6,6 +6,13 @@
   "configurations": [
     {
       "type": "java",
+      "name": "Main",
+      "request": "launch",
+      "mainClass": "frc.robot.Main",
+      "projectName": "2024-Grasshopper"
+    },
+    {
+      "type": "java",
       "name": "GitVersion",
       "request": "launch",
       "mainClass": "frc.bearbotics.util.GitVersion",

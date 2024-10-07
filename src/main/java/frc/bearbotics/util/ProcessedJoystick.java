@@ -52,10 +52,10 @@ public class ProcessedJoystick {
         rawInput = joystick.getLeftX();
         break;
       case Ry:
-        rawInput = joystick.getRightY();
+        rawInput = -joystick.getRightY();
         break;
       case Rx:
-        rawInput = joystick.getRightX();
+        rawInput = -joystick.getRightX();
         break;
       default:
         rawInput = 0;

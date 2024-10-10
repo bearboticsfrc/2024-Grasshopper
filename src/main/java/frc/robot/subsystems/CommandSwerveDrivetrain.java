@@ -100,7 +100,7 @@ public class CommandSwerveDrivetrain extends SwerveDrivetrain
             TunerConstants.kSpeedAt12VoltsMps,
             driveBaseRadius,
             new ReplanningConfig()),
-        () -> m_operatorForwardDirection == redAllianceRotation,
+        () -> AllianceColor.getAlliance() == Alliance.Red,
         this);
   }
 

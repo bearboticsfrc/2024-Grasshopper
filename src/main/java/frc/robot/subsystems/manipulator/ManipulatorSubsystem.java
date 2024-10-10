@@ -25,6 +25,10 @@ public class ManipulatorSubsystem extends SubsystemBase {
     elevator = new ElevatorSubsystem();
   }
 
+  public boolean isNoteInIntake() {
+    return intake.isNoteInRoller() || intake.isNoteInShooter();
+  }
+
   /**
    * Returns a command to home the elevator subsystem. This command sequence will:
    *
@@ -77,7 +81,7 @@ public class ManipulatorSubsystem extends SubsystemBase {
    *
    * <ol>
    *   <li>Set the intake to full velocity
-   *   <li>Wait for 0.25 seconds
+   *   <li>Wait for {@link FEED_DELAY} seconds
    *   <li>Stop the manipulator systems (intake, shooter, and elevator)
    * </ol>
    *

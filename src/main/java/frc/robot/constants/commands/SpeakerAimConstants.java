@@ -8,7 +8,7 @@ public class SpeakerAimConstants {
 
   public static class RotationPid {
     public static final double P = 8;
-    public static final double I = 4;
+    public static final double I = 6;
     public static final double D = 1;
 
     public static class ContinuousInput {

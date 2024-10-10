@@ -4,12 +4,12 @@
     {
       "anchor": {
         "x": 7.977067382706194,
-        "y": 3.767480677818499
+        "y": 4.089988751406074
       },
       "prevControl": null,
       "nextControl": {
         "x": 5.719510867593163,
-        "y": 3.723502304147466
+        "y": 4.046010377735041
       },
       "isLocked": false,
       "linkedName": "C3"
@@ -25,7 +25,7 @@
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "Shoot"
     }
   ],
   "rotationTargets": [],

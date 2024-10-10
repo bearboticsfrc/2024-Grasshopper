@@ -32,9 +32,14 @@ public class CANdleSubsystem extends SubsystemBase implements AllianceReadyListe
     CANdle = new CANdle(CANdleConstants.CANDLE_PORT);
 
     ErrorCode errorCode = CANdle.configAllSettings(new CANdleConfiguration(), 100);
+
     if (!errorCode.equals(ErrorCode.OK)) {
       DriverStation.reportError("CANdle Error -> " + errorCode, false);
     }
+  }
+
+  public Color getCurrentColor() {
+    return currentColor;
   }
 
   /** updates the current alliance */
@@ -76,6 +81,10 @@ public class CANdleSubsystem extends SubsystemBase implements AllianceReadyListe
         (int) (currentColor.blue * 255));
   }
 
+  /** Sets the color of the entire LED strip to the current alliance's color. */
+  public void setAllianceColor() {
+    setColor(getColorFromAlliance(AllianceColor.getAlliance()));
+  }
   /**
    * Sets a specific animation pattern with a specified color. Supports strobe and larson patterns.
    *

@@ -7,8 +7,9 @@ public class SpeakerAimConstants {
   public static final Rotation2d ANGULAR_OFFSET = Rotation2d.fromDegrees(180);
 
   public static class RotationPid {
-    public static final double P = 5;
-    public static final double I = 2;
+    public static final double P = 8;
+    public static final double I = 4;
+    public static final double D = 1;
 
     public static class ContinuousInput {
       public static final double MIN = -Math.PI;

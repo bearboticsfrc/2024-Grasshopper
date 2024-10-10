@@ -12,6 +12,7 @@ import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.bearbotics.location.FieldPositions;
 import frc.bearbotics.util.ProcessedJoystick;
 import frc.bearbotics.util.ProcessedJoystick.JoystickAxis;
@@ -103,10 +104,10 @@ public class RobotContainer {
         .whileTrue(manipulator.distanceShoot(this::getDistanceToSpeaker))
         .onFalse(manipulator.stopManipulator());
 
-    driverJoystick
-        .x()
-        .onTrue(CANdle.runOnce(() -> CANdle.setColor(Color.kBlue)))
-        .onFalse(CANdle.runOnce(CANdle::clear));
+    new Trigger(manipulator::isNoteInIntake)
+        .debounce(0.5)
+        .onTrue(CANdle.runOnce(() -> CANdle.setColor(Color.kGreen)))
+        .onFalse(CANdle.runOnce(() -> CANdle.setAllianceColor()));
   }
 
   /**

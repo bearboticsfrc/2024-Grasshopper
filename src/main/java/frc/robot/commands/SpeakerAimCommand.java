@@ -2,6 +2,7 @@ package frc.robot.commands;
 
 import com.ctre.phoenix6.mechanisms.swerve.SwerveRequest;
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -15,7 +16,12 @@ public class SpeakerAimCommand extends Command {
   private final CommandSwerveDrivetrain drivetrain;
 
   private final PIDController rotationalPIDController =
-      new PIDController(SpeakerAimConstants.RotationPid.P, SpeakerAimConstants.RotationPid.I, 0);
+      new PIDController(
+          SpeakerAimConstants.RotationPid.P,
+          SpeakerAimConstants.RotationPid.I,
+          SpeakerAimConstants.RotationPid.D);
+
+  private final Debouncer rotationSetpointDebouncer = new Debouncer(0.1);
 
   private final SwerveRequest.FieldCentric swerveRequest =
       new SwerveRequest.FieldCentric().withDeadband(0.1);
@@ -105,7 +111,9 @@ public class SpeakerAimCommand extends Command {
   /** Returns true if the PID controller indicates we are aimed. */
   @Override
   public boolean isFinished() {
-    return endless ? false : rotationalPIDController.atSetpoint();
+    return endless
+        ? false
+        : rotationSetpointDebouncer.calculate(rotationalPIDController.atSetpoint());
   }
 
   /** Stops any robot movement */

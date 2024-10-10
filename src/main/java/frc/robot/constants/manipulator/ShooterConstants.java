@@ -18,7 +18,7 @@ public abstract class ShooterConstants {
               Map.entry(3.171402, 3300.0),
               Map.entry(3.611402, 3600.0),
               Map.entry(4.221402, 4000.0),
-              Map.entry(4.571402, 4350.0),
+              Map.entry(4.571402, 4250.0),
               Map.entry(4.971402, 4450.0),
               Map.entry(5.0, 4450.0)));
 

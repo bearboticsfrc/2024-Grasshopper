@@ -21,8 +21,8 @@ public abstract class ElevatorConstants {
               Map.entry(2.721402, 7.0),
               Map.entry(3.171402, 5.0),
               Map.entry(3.611402, 4.0),
-              Map.entry(4.221402, 1.55),
-              Map.entry(4.571402, 1.425),
+              Map.entry(4.221402, 2.55),
+              Map.entry(4.571402, 1.8),
               Map.entry(4.971402, 1.3),
               Map.entry(5.0, 1.3)));
 

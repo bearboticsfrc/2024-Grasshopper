@@ -7,8 +7,10 @@ import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.manipulator.ManipulatorSubsystem;
 import java.util.function.DoubleSupplier;
 
-public class Sub3W3 implements AutoInterface {
-  private final PathPlannerPath SUB3_W3 = PathPlannerPath.fromPathFile("Sub3W3");
+public class Sub2W3W2W1 implements AutoInterface {
+  private final PathPlannerPath SUB2_W3 = PathPlannerPath.fromPathFile("Sub2W3");
+  private final PathPlannerPath W3_W2 = PathPlannerPath.fromPathFile("W3W2");
+  private final PathPlannerPath W2_W1 = PathPlannerPath.fromPathFile("W2W1");
 
   /**
    * Retrieve the name of this auto
@@ -16,7 +18,7 @@ public class Sub3W3 implements AutoInterface {
    * @return The auto name
    */
   public String getName() {
-    return "Sub3W3";
+    return "Sub2W3W2W1";
   }
 
   /**
@@ -33,7 +35,11 @@ public class Sub3W3 implements AutoInterface {
       DoubleSupplier distanceToSpeaker) {
     return Commands.sequence(
         AutoUtils.distanceShoot(drivetrain, manipulator, distanceToSpeaker),
-        AutoUtils.followPathAndIntake(SUB3_W3, manipulator),
+        AutoUtils.followPathAndIntake(SUB2_W3, manipulator),
+        AutoUtils.distanceShoot(drivetrain, manipulator, distanceToSpeaker),
+        AutoUtils.followPathAndIntake(W3_W2, manipulator),
+        AutoUtils.distanceShoot(drivetrain, manipulator, distanceToSpeaker),
+        AutoUtils.followPathAndIntake(W2_W1, manipulator),
         AutoUtils.distanceShoot(drivetrain, manipulator, distanceToSpeaker));
   }
 }

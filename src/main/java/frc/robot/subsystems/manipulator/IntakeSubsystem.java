@@ -13,7 +13,7 @@ import frc.robot.constants.manipulator.IntakeConstants;
 import frc.robot.constants.manipulator.IntakeConstants.IntakeVelocity;
 
 public class IntakeSubsystem extends SubsystemBase {
-  private final boolean SHUFFLEBOARD_ENABLED = true;
+  private final boolean SHUFFLEBOARD_ENABLED = false;
 
   private CANSparkMax intakeMotor;
   private RelativeEncoder intakeMotorEncoder;

@@ -5,7 +5,7 @@ public abstract class IntakeConstants {
   public static final int SHOOTER_BEAM_BREAK_CHANNEL = 1;
 
   // Delay to wait until we stop the intake motors once we trip the beam-break in our intake cycle
-  public static final double STOP_DELAY = 0.03;
+  public static final double STOP_DELAY = 0;
 
   // Delay to wait until stopping the intake when feeding a note
   public static final double FEED_DELAY = 0.5;

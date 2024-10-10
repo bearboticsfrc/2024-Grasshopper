@@ -18,7 +18,7 @@ import frc.robot.constants.manipulator.ShooterConstants.ShooterVelocity;
 import java.util.Collections;
 
 public class ShooterSubsystem extends SubsystemBase {
-  private final boolean SHUFFLEBOARD_ENABLED = true;
+  private final boolean SHUFFLEBOARD_ENABLED = false;
 
   private CANSparkFlex upperShooterMotor;
   private CANSparkFlex lowerShooterMotor;
@@ -28,7 +28,7 @@ public class ShooterSubsystem extends SubsystemBase {
 
   private final QuadraticCurveInterpolator velocityInterpolator =
       new QuadraticCurveInterpolator(ShooterConstants.SHOOT_ANGLE_MAP);
-  private final double MAX_DISTANCE = Collections.max(ShooterConstants.SHOOT_ANGLE_MAP.keySet());
+  private final double MAX_DISTANCE = 4.8;
   private final double MIN_DISTANCE = Collections.min(ShooterConstants.SHOOT_ANGLE_MAP.keySet());
 
   private double targetVelocity;

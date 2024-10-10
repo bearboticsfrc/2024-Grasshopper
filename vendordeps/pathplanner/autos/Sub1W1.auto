@@ -2,10 +2,10 @@
   "version": 1.0,
   "startingPose": {
     "position": {
-      "x": 1.3216735004898588,
-      "y": 5.599912914111543
+      "x": 0.7635575631511622,
+      "y": 6.757878020260545
     },
-    "rotation": 0
+    "rotation": -120.0
   },
   "command": {
     "type": "sequential",
@@ -14,7 +14,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Sub1W2"
+            "pathName": "Sub1W1"
           }
         }
       ]

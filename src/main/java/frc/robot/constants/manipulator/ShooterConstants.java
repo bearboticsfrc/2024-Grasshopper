@@ -11,14 +11,16 @@ public abstract class ShooterConstants {
       new TreeMap<>(
           Map.ofEntries(
               Map.entry(0.0, 2800.0),
-              Map.entry(1.335, 2800.0),
-              Map.entry(1.87, 2800.0),
-              Map.entry(2.42, 3000.0),
-              Map.entry(2.95, 3100.0),
-              Map.entry(3.4, 3300.0),
-              Map.entry(3.84, 3500.0),
-              Map.entry(4.45, 4000.0),
-              Map.entry(4.8, 4250.0)));
+              Map.entry(1.10640, 2800.0),
+              Map.entry(1.641402, 2800.0),
+              Map.entry(2.191402, 3000.0),
+              Map.entry(2.721402, 3200.0),
+              Map.entry(3.171402, 3300.0),
+              Map.entry(3.611402, 3600.0),
+              Map.entry(4.221402, 4000.0),
+              Map.entry(4.571402, 4350.0),
+              Map.entry(4.971402, 4450.0),
+              Map.entry(5.0, 4450.0)));
 
   public static class UpperShooterMotor {
     public static final String NAME = "Upper Shooter Motor";

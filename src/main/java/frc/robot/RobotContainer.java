@@ -8,6 +8,7 @@ import com.ctre.phoenix6.mechanisms.swerve.SwerveRequest;
 import com.pathplanner.lib.commands.FollowPathCommand;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -16,10 +17,12 @@ import frc.bearbotics.util.ProcessedJoystick;
 import frc.bearbotics.util.ProcessedJoystick.JoystickAxis;
 import frc.bearbotics.util.ProcessedJoystick.ThrottleProfile;
 import frc.robot.commands.SpeakerAimCommand;
-import frc.robot.commands.autos.Sub1W2W3;
+import frc.robot.commands.autos.AutoInterface;
+import frc.robot.constants.AutoConstants;
 import frc.robot.constants.DriveConstants;
 import frc.robot.constants.RobotConstants;
 import frc.robot.generated.TunerConstants;
+import frc.robot.subsystems.CANdleSubsystem;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.manipulator.ManipulatorSubsystem;
 import org.photonvision.PhotonUtils;
@@ -30,6 +33,9 @@ public class RobotContainer {
 
   /* Our manipulator */
   private final ManipulatorSubsystem manipulator = new ManipulatorSubsystem();
+
+  /* Our CANdle */
+  private final CANdleSubsystem CANdle = new CANdleSubsystem();
 
   /* Our driver joystick */
   private final CommandXboxController driverJoystick =
@@ -44,7 +50,6 @@ public class RobotContainer {
   private final SendableChooser<Command> autoCommandChooser = new SendableChooser<>();
 
   public RobotContainer() {
-    configureSwerveDrive();
     configureBindings();
     setupShuffleboardTab(RobotConstants.COMPETITION_TAB);
     buildAutoList();
@@ -53,11 +58,14 @@ public class RobotContainer {
   private void setupShuffleboardTab(ShuffleboardTab shuffleboardTab) {
     shuffleboardTab.add("Home Elevator", manipulator.homeElevator());
     shuffleboardTab.addDouble("Distance to Speaker", this::getDistanceToSpeaker);
+    shuffleboardTab.addDouble(
+        "Pose Heading", () -> drivetrain.getPose().getRotation().getDegrees());
   }
 
   /** Configure the joystick bindings for the robot. */
   private void configureBindings() {
-    drivetrain.setDefaultCommand(drivetrain.applyRequest(this::getDefaultDriveRequest));
+    drivetrain.setDefaultCommand(
+        drivetrain.applyRequest(this::getDefaultDriveRequest).ignoringDisable(true));
     drivetrain.registerTelemetry(DriveConstants.LOGGER::telemeterize);
 
     driverJoystick.a().onTrue(drivetrain.runOnce(drivetrain::seedFieldRelative));
@@ -94,6 +102,11 @@ public class RobotContainer {
         .rightBumper()
         .whileTrue(manipulator.distanceShoot(this::getDistanceToSpeaker))
         .onFalse(manipulator.stopManipulator());
+
+    driverJoystick
+        .x()
+        .onTrue(CANdle.runOnce(() -> CANdle.setColor(Color.kBlue)))
+        .onFalse(CANdle.runOnce(CANdle::clear));
   }
 
   /**
@@ -146,8 +159,13 @@ public class RobotContainer {
     FollowPathCommand.warmupCommand().schedule();
 
     autoCommandChooser.setDefaultOption("0 - NoOp", Commands.idle());
-    autoCommandChooser.addOption(
-        "1 - Sub1W2W3", Sub1W2W3.get(drivetrain, manipulator, this::getDistanceToSpeaker));
+
+    int index = 1;
+    for (AutoInterface auto : AutoConstants.autos) {
+      autoCommandChooser.addOption(
+          String.format("%d - %s", index++, auto.getName()),
+          auto.get(drivetrain, manipulator, this::getDistanceToSpeaker));
+    }
 
     RobotConstants.COMPETITION_TAB
         .add("Auto Command", autoCommandChooser)

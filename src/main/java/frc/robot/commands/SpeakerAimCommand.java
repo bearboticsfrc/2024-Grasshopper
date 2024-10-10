@@ -15,7 +15,7 @@ public class SpeakerAimCommand extends Command {
   private final CommandSwerveDrivetrain drivetrain;
 
   private final PIDController rotationalPIDController =
-      new PIDController(SpeakerAimConstants.RotationPid.P, 0, 0);
+      new PIDController(SpeakerAimConstants.RotationPid.P, SpeakerAimConstants.RotationPid.I, 0);
 
   private final SwerveRequest.FieldCentric swerveRequest =
       new SwerveRequest.FieldCentric().withDeadband(0.1);
@@ -59,7 +59,7 @@ public class SpeakerAimCommand extends Command {
         SpeakerAimConstants.RotationPid.ContinuousInput.MAX);
 
     rotationalPIDController.setTolerance(SpeakerAimConstants.SETPOINT_TOLERANCE.getRadians());
-    rotationalPIDController.setSetpoint(0);
+    rotationalPIDController.setSetpoint(Math.toRadians(180));
 
     addRequirements(drivetrain);
   }
@@ -85,7 +85,7 @@ public class SpeakerAimCommand extends Command {
    */
   public SwerveRequest getSwerveRequest() {
     Rotation2d offsetRotation = getYawToSpeaker();
-    double rotateOutput = rotationalPIDController.calculate(offsetRotation.getRadians());
+    double rotateOutput = -rotationalPIDController.calculate(offsetRotation.getRadians());
 
     return swerveRequest
         .withVelocityX(xVelocitySupplier.getAsDouble())

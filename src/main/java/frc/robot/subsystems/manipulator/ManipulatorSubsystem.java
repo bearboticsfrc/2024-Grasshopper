@@ -77,7 +77,7 @@ public class ManipulatorSubsystem extends SubsystemBase {
    *
    * <ol>
    *   <li>Set the intake to full velocity
-   *   <li>Wait for 0.25 seconds
+   *   <li>Wait for {@link FEED_DELAY} seconds
    *   <li>Stop the manipulator systems (intake, shooter, and elevator)
    * </ol>
    *

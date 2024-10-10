@@ -1,6 +1,5 @@
 package frc.robot.commands.autos;
 
-import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.path.PathPlannerPath;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -8,10 +7,17 @@ import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.manipulator.ManipulatorSubsystem;
 import java.util.function.DoubleSupplier;
 
-public class Sub1W2W3 {
-  public static final String NAME = "Sub1W2W3";
+public class Sub3W3 implements AutoInterface {
+  private final PathPlannerPath SUB3_W3 = PathPlannerPath.fromPathFile("Sub3W3");
 
-  private static final PathPlannerPath SUB1_W2 = PathPlannerPath.fromPathFile("Sub1W2");
+  /**
+   * Retrieve the name of this auto
+   *
+   * @return The auto name
+   */
+  public String getName() {
+    return this.getClass().getName();
+  }
 
   /**
    * Retrieves a composite Command that represents the full autonomous routine.
@@ -21,13 +27,13 @@ public class Sub1W2W3 {
    * @param manipulator The ManipulatorSubsystem required for shooting and note handling.
    * @return The entire autonomous routine command.
    */
-  public static Command get(
+  public Command get(
       CommandSwerveDrivetrain drivetrain,
       ManipulatorSubsystem manipulator,
       DoubleSupplier distanceToSpeaker) {
     return Commands.sequence(
-        manipulator.distanceShoot(distanceToSpeaker),
-        Commands.parallel(AutoBuilder.followPath(SUB1_W2), manipulator.intakeNote()),
-        manipulator.distanceShoot(distanceToSpeaker));
+        AutoUtils.distanceShoot(drivetrain, manipulator, distanceToSpeaker),
+        AutoUtils.followPathAndIntake(SUB3_W3, manipulator),
+        AutoUtils.distanceShoot(drivetrain, manipulator, distanceToSpeaker));
   }
 }

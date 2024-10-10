@@ -1,51 +1,65 @@
-package frc.robot.subsystems.candle;
+package frc.robot.subsystems;
 
+import com.ctre.phoenix.ErrorCode;
 import com.ctre.phoenix.led.Animation;
 import com.ctre.phoenix.led.CANdle;
-import com.ctre.phoenix.led.CANdle.VBatOutputMode;
 import com.ctre.phoenix.led.CANdleConfiguration;
 import com.ctre.phoenix.led.LarsonAnimation;
 import com.ctre.phoenix.led.LarsonAnimation.BounceMode;
 import com.ctre.phoenix.led.StrobeAnimation;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.bearbotics.fms.AllianceColor;
 import frc.bearbotics.fms.AllianceReadyListener;
+import frc.robot.constants.CANdleConstants;
 
-public class CandleSubsystem extends SubsystemBase implements AllianceReadyListener {
-  // TODO: set the port value for the CANdle
-  private final int CANDLE_PORT = -1;
-
-  private final CANdle LEDS = new CANdle(CANDLE_PORT);
-  private final int animationSlot = 0;
+public class CANdleSubsystem extends SubsystemBase implements AllianceReadyListener {
+  private CANdle CANdle;
   private Color currentColor;
-
-  // TODO: set this number of leds on the robot
-  private int ledsSize;
 
   /**
    * Initializes a new instance of the Candle Subsystem, configuring the CANdle device with default
    * settings and preparing the LEDs for control.
    */
-  public CandleSubsystem() {
-    CANdleConfiguration candleConfiguration = new CANdleConfiguration();
-    candleConfiguration.vBatOutputMode = VBatOutputMode.Modulated;
-    LEDS.configAllSettings(candleConfiguration, 100);
+  public CANdleSubsystem() {
+    configureCANdle();
     AllianceColor.addListener(this);
   }
 
-  /** updates the current Alliance. @Override */
-  public void updateAlliance(Alliance alliance) {
+  private void configureCANdle() {
+    CANdle = new CANdle(CANdleConstants.CANDLE_PORT);
 
-    if (currentColor == null || currentColor == Color.kRed || currentColor == Color.kBlue) {
-      setAllianceColor();
+    ErrorCode errorCode = CANdle.configAllSettings(new CANdleConfiguration(), 100);
+    if (!errorCode.equals(ErrorCode.OK)) {
+      DriverStation.reportError("CANdle Error -> " + errorCode, false);
     }
   }
 
+  /** updates the current alliance */
+  @Override
+  public void updateAlliance(Alliance alliance) {
+    Color allianceColor = getColorFromAlliance(alliance);
+
+    if (currentColor != allianceColor) {
+      setColor(allianceColor);
+    }
+  }
+
+  /**
+   * Get the respective color from the alliance
+   *
+   * @param alliance The alliance
+   * @return A {@link Color} describing the alliance color
+   */
+  private Color getColorFromAlliance(Alliance alliance) {
+    return alliance == Alliance.Red ? Color.kRed : Color.kBlue;
+  }
+
   /** Clears the animations and turns the LEDs off. */
-  public void clearSegment() {
-    LEDS.clearAnimation(animationSlot);
+  public void clear() {
+    CANdle.clearAnimation(0);
     setColor(Color.kBlack);
   }
 
@@ -56,7 +70,7 @@ public class CandleSubsystem extends SubsystemBase implements AllianceReadyListe
    */
   public void setColor(Color color) {
     currentColor = color;
-    LEDS.setLEDs(
+    CANdle.setLEDs(
         (int) (currentColor.red * 255),
         (int) (currentColor.green * 255),
         (int) (currentColor.blue * 255));
@@ -69,14 +83,14 @@ public class CandleSubsystem extends SubsystemBase implements AllianceReadyListe
    * @param color The color to use for the animation.
    */
   public void setPattern(CandlePattern pattern, Color color) {
-    clearSegment();
+    clear();
 
     switch (pattern) {
       case STROBE:
-        setStrobeAnimation(color, 10);
+        setStrobeAnimation(color, CANdleConstants.STROBE_DURATION);
         break;
       case LARSON:
-        setLarsonAnimation(color, 0.001);
+        setLarsonAnimation(color, CANdleConstants.LARSON_DURATION);
     }
   }
 
@@ -86,7 +100,7 @@ public class CandleSubsystem extends SubsystemBase implements AllianceReadyListe
    * @param color The color of the LEDs.
    * @param speed The speed of the animation.
    */
-  public void setLarsonAnimation(Color color, double speed) {
+  private void setLarsonAnimation(Color color, double speed) {
     currentColor = color;
 
     LarsonAnimation animation =
@@ -96,11 +110,11 @@ public class CandleSubsystem extends SubsystemBase implements AllianceReadyListe
             (int) (color.blue * 255),
             0,
             speed,
-            ledsSize,
+            400,
             BounceMode.Back,
             1);
 
-    setAnimation(animation, animationSlot);
+    setAnimation(animation, 0);
   }
 
   /**
@@ -109,7 +123,7 @@ public class CandleSubsystem extends SubsystemBase implements AllianceReadyListe
    * @param color The color of the strobe effect.
    * @param speed The speed of the strobe effect.
    */
-  public void setStrobeAnimation(Color color, double speed) {
+  private void setStrobeAnimation(Color color, double speed) {
     currentColor = color;
 
     StrobeAnimation animation =
@@ -119,33 +133,14 @@ public class CandleSubsystem extends SubsystemBase implements AllianceReadyListe
             (int) (color.blue * 255),
             0,
             speed,
-            ledsSize);
+            400);
 
-    setAnimation(animation, animationSlot);
-  }
-
-  /**
-   * Sets the LED color based on the robot's alliance color. Intended to visually indicate the
-   * alliance during competitions.
-   */
-  public void setAllianceColor() {
-    Color color = getAllianceColor(AllianceColor.isRedAlliance());
-
-    setColor(color);
+    setAnimation(animation, 0);
   }
 
   /** Animates the LEDs. */
   private void setAnimation(Animation animation, int slot) {
-    LEDS.animate(animation, animationSlot);
-  }
-
-  /**
-   * gets and return the Alliance color.
-   *
-   * @return the Alliance color
-   */
-  private Color getAllianceColor(boolean isRedAlliance) {
-    return isRedAlliance ? Color.kRed : Color.kBlue;
+    CANdle.animate(animation, 0);
   }
 
   public enum CandlePattern {

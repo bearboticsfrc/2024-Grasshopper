@@ -20,7 +20,7 @@ import frc.robot.constants.manipulator.ElevatorConstants.ElevatorPosition;
 import java.util.Collections;
 
 public class ElevatorSubsystem extends SubsystemBase {
-  private final boolean SHUFFLEBOARD_ENABLED = true;
+  private final boolean SHUFFLEBOARD_ENABLED = false;
 
   private CANSparkMax elevatorMotor;
   private RelativeEncoder elevatorMotorEncoder;
@@ -35,7 +35,7 @@ public class ElevatorSubsystem extends SubsystemBase {
   private final QuadraticCurveInterpolator angleInterpolator =
       new QuadraticCurveInterpolator(ElevatorConstants.SHOOT_ANGLE_MAP);
 
-  private final double MAX_DISTANCE = Collections.max(ElevatorConstants.SHOOT_ANGLE_MAP.keySet());
+  private final double MAX_DISTANCE = 4.8;
   private final double MIN_DISTANCE = Collections.min(ElevatorConstants.SHOOT_ANGLE_MAP.keySet());
 
   public ElevatorSubsystem() {

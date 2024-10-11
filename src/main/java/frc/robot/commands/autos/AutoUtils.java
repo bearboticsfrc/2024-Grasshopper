@@ -4,6 +4,7 @@ import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.path.PathPlannerPath;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import frc.bearbotics.location.FieldPositions;
 import frc.robot.commands.PoseAimCommand;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.manipulator.ManipulatorSubsystem;
@@ -23,7 +24,8 @@ public class AutoUtils {
       ManipulatorSubsystem manipulator,
       DoubleSupplier distanceToSpeaker) {
     return Commands.sequence(
-        new PoseAimCommand(drivetrain), manipulator.distanceShoot(distanceToSpeaker));
+        new PoseAimCommand(drivetrain, FieldPositions.getInstance()::getSpeakerCenter),
+        manipulator.distanceShoot(distanceToSpeaker));
   }
 
   /**

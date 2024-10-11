@@ -34,7 +34,7 @@ public class Sub2W3W2W1 implements AutoInterface {
       ManipulatorSubsystem manipulator,
       DoubleSupplier distanceToSpeaker) {
     return Commands.sequence(
-        AutoUtils.distanceShoot(drivetrain, manipulator, distanceToSpeaker),
+        manipulator.distanceShoot(distanceToSpeaker),
         AutoUtils.followPathAndIntake(SUB2_W3, manipulator),
         AutoUtils.distanceShoot(drivetrain, manipulator, distanceToSpeaker),
         AutoUtils.followPathAndIntake(W3_W2, manipulator),

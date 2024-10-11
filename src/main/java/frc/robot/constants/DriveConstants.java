@@ -8,6 +8,7 @@ import frc.robot.generated.TunerConstants;
 public class DriveConstants {
   // Controller ports.
   public static final int DRIVER_CONTROLLER_PORT = 0;
+  public static final int OPERATOR_CONTROLLER_PORT = 1;
 
   public static final double MAX_VELOCITY =
       TunerConstants.kSpeedAt12VoltsMps; // kSpeedAt12VoltsMps desired top speed

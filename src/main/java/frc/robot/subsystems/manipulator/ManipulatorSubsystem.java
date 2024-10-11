@@ -242,4 +242,12 @@ public class ManipulatorSubsystem extends SubsystemBase {
         Commands.waitUntil(shooter::atTargetVelocity),
         setIntake(IntakeVelocity.FULL));
   }
+
+  public Command feederShoot() {
+    return Commands.sequence(
+        runShooterAndElevator(ShooterVelocity.FEEDER, ElevatorPosition.FEEDER),
+        waitForShooterAndElevator(),
+        feedNote(),
+        stopManipulator());
+  }
 }

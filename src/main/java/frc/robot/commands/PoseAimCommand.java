@@ -9,6 +9,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.constants.commands.PoseAimConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import java.util.function.DoubleSupplier;
+import java.util.function.Supplier;
 import org.photonvision.PhotonUtils;
 
 public class PoseAimCommand extends Command {
@@ -29,7 +30,7 @@ public class PoseAimCommand extends Command {
   private DoubleSupplier xVelocitySupplier = () -> 0;
   private DoubleSupplier yVelocitySupplier = () -> 0;
 
-  private Pose2d targetPose;
+  private Supplier<Pose2d> targetPose;
   private boolean endless = false;
 
   /**
@@ -42,13 +43,12 @@ public class PoseAimCommand extends Command {
    */
   public PoseAimCommand(
       CommandSwerveDrivetrain drivetrain,
-      Pose2d targetPose,
+      Supplier<Pose2d> targetPose,
       DoubleSupplier xVelocitySupplier,
       DoubleSupplier yVelocitySupplier) {
-    this(drivetrain);
+    this(drivetrain, targetPose);
 
     this.endless = true;
-    this.targetPose = targetPose;
     this.xVelocitySupplier = xVelocitySupplier;
     this.yVelocitySupplier = yVelocitySupplier;
   }
@@ -58,8 +58,9 @@ public class PoseAimCommand extends Command {
    *
    * @param drivetrain The drivetrain instance for robot movement control.
    */
-  public PoseAimCommand(CommandSwerveDrivetrain drivetrain) {
+  public PoseAimCommand(CommandSwerveDrivetrain drivetrain, Supplier<Pose2d> targetPose) {
     this.drivetrain = drivetrain;
+    this.targetPose = targetPose;
 
     rotationalPIDController.enableContinuousInput(
         PoseAimConstants.RotationPid.ContinuousInput.MIN,
@@ -104,7 +105,7 @@ public class PoseAimCommand extends Command {
    * @return The yaw
    */
   private Rotation2d getYawToPose() {
-    return PhotonUtils.getYawToPose(drivetrain.getPose(), targetPose);
+    return PhotonUtils.getYawToPose(drivetrain.getPose(), targetPose.get());
   }
 
   /** Returns true if the PID controller indicates we are aimed. */

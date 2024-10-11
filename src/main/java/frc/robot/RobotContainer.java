@@ -40,6 +40,10 @@ public class RobotContainer {
   private final CommandXboxController driverJoystick =
       new CommandXboxController(DriveConstants.DRIVER_CONTROLLER_PORT);
 
+  /* Our operator joystick */
+  private final CommandXboxController operatorJoystick =
+      new CommandXboxController(DriveConstants.OPERATOR_CONTROLLER_PORT);
+
   /* Our processed joystick inputs */
   private final ProcessedJoystick processedJoystick =
       new ProcessedJoystick(driverJoystick, this::getThrottleProfile);
@@ -71,15 +75,6 @@ public class RobotContainer {
     driverJoystick.a().onTrue(drivetrain.runOnce(drivetrain::seedFieldRelative));
 
     driverJoystick
-        .x()
-        .whileTrue(
-            new PoseAimCommand(
-                drivetrain,
-                FieldPositions.getInstance().getFeederPose(),
-                () -> processedJoystick.get(JoystickAxis.Ly),
-                () -> processedJoystick.get(JoystickAxis.Lx)));
-
-    driverJoystick
         .rightStick()
         .whileTrue(Commands.runOnce(() -> setThrottleProfile(ThrottleProfile.TURBO)))
         .onFalse(Commands.runOnce(() -> setThrottleProfile(ThrottleProfile.NORMAL)));
@@ -99,7 +94,7 @@ public class RobotContainer {
         .whileTrue(
             new PoseAimCommand(
                 drivetrain,
-                FieldPositions.getInstance().getSpeakerCenter(),
+                FieldPositions.getInstance()::getSpeakerCenter,
                 () -> processedJoystick.get(JoystickAxis.Ly),
                 () -> processedJoystick.get(JoystickAxis.Lx)));
 
@@ -111,6 +106,13 @@ public class RobotContainer {
     driverJoystick
         .rightBumper()
         .whileTrue(manipulator.distanceShoot(this::getDistanceToSpeaker))
+        .onFalse(manipulator.stopManipulator());
+
+    operatorJoystick
+        .rightTrigger()
+        .whileTrue(
+            new PoseAimCommand(drivetrain, FieldPositions.getInstance()::getFeederPose)
+                .andThen(manipulator.feederShoot()))
         .onFalse(manipulator.stopManipulator());
   }
 

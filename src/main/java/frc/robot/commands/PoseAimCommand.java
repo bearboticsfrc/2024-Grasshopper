@@ -6,20 +6,19 @@ import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.bearbotics.location.FieldPositions;
-import frc.robot.constants.commands.SpeakerAimConstants;
+import frc.robot.constants.commands.PoseAimConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import java.util.function.DoubleSupplier;
 import org.photonvision.PhotonUtils;
 
-public class SpeakerAimCommand extends Command {
+public class PoseAimCommand extends Command {
   private final CommandSwerveDrivetrain drivetrain;
 
   private final PIDController rotationalPIDController =
       new PIDController(
-          SpeakerAimConstants.RotationPid.P,
-          SpeakerAimConstants.RotationPid.I,
-          SpeakerAimConstants.RotationPid.D);
+          PoseAimConstants.RotationPid.P,
+          PoseAimConstants.RotationPid.I,
+          PoseAimConstants.RotationPid.D);
 
   private final Debouncer rotationSetpointDebouncer = new Debouncer(0.1);
 
@@ -30,7 +29,7 @@ public class SpeakerAimCommand extends Command {
   private DoubleSupplier xVelocitySupplier = () -> 0;
   private DoubleSupplier yVelocitySupplier = () -> 0;
 
-  private Pose2d speakerPose;
+  private Pose2d targetPose;
   private boolean endless = false;
 
   /**
@@ -41,13 +40,15 @@ public class SpeakerAimCommand extends Command {
    * @param xVelocitySupplier The x velocity supplier
    * @param yVelocitySupplier The y velocity supplier
    */
-  public SpeakerAimCommand(
+  public PoseAimCommand(
       CommandSwerveDrivetrain drivetrain,
+      Pose2d targetPose,
       DoubleSupplier xVelocitySupplier,
       DoubleSupplier yVelocitySupplier) {
     this(drivetrain);
 
     this.endless = true;
+    this.targetPose = targetPose;
     this.xVelocitySupplier = xVelocitySupplier;
     this.yVelocitySupplier = yVelocitySupplier;
   }
@@ -57,40 +58,38 @@ public class SpeakerAimCommand extends Command {
    *
    * @param drivetrain The drivetrain instance for robot movement control.
    */
-  public SpeakerAimCommand(CommandSwerveDrivetrain drivetrain) {
+  public PoseAimCommand(CommandSwerveDrivetrain drivetrain) {
     this.drivetrain = drivetrain;
 
     rotationalPIDController.enableContinuousInput(
-        SpeakerAimConstants.RotationPid.ContinuousInput.MIN,
-        SpeakerAimConstants.RotationPid.ContinuousInput.MAX);
+        PoseAimConstants.RotationPid.ContinuousInput.MIN,
+        PoseAimConstants.RotationPid.ContinuousInput.MAX);
 
-    rotationalPIDController.setTolerance(SpeakerAimConstants.SETPOINT_TOLERANCE.getRadians());
+    rotationalPIDController.setTolerance(PoseAimConstants.SETPOINT_TOLERANCE.getRadians());
     rotationalPIDController.setSetpoint(Math.toRadians(180));
 
     addRequirements(drivetrain);
   }
 
-  /** Initalize, set the speaker pose, stop the robot */
+  /** Initalize, set the pose, stop the robot */
   @Override
   public void initialize() {
-    speakerPose = FieldPositions.getInstance().getSpeakerCenter();
-
     drivetrain.setControl(idleSwerveRequest);
   }
 
-  /** Align the robot's heading with the speaker's pose */
+  /** Align the robot's heading with the pose */
   @Override
   public void execute() {
     drivetrain.setControl(getSwerveRequest());
   }
 
   /**
-   * Get the swerve request to align with the speaker
+   * Get the swerve request to align with the pose
    *
    * @return A swerve request describing how we want to align
    */
   public SwerveRequest getSwerveRequest() {
-    Rotation2d offsetRotation = getYawToSpeaker();
+    Rotation2d offsetRotation = getYawToPose();
     double rotateOutput = -rotationalPIDController.calculate(offsetRotation.getRadians());
 
     return swerveRequest
@@ -100,12 +99,12 @@ public class SpeakerAimCommand extends Command {
   }
 
   /**
-   * Get the yaw offset to the speaker
+   * Get the yaw offset to the pose
    *
    * @return The yaw
    */
-  private Rotation2d getYawToSpeaker() {
-    return PhotonUtils.getYawToPose(drivetrain.getPose(), speakerPose);
+  private Rotation2d getYawToPose() {
+    return PhotonUtils.getYawToPose(drivetrain.getPose(), targetPose);
   }
 
   /** Returns true if the PID controller indicates we are aimed. */

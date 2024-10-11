@@ -8,16 +8,14 @@ import com.ctre.phoenix6.mechanisms.swerve.SwerveRequest;
 import com.pathplanner.lib.commands.FollowPathCommand;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
-import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.bearbotics.location.FieldPositions;
 import frc.bearbotics.util.ProcessedJoystick;
 import frc.bearbotics.util.ProcessedJoystick.JoystickAxis;
 import frc.bearbotics.util.ProcessedJoystick.ThrottleProfile;
-import frc.robot.commands.SpeakerAimCommand;
+import frc.robot.commands.PoseAimCommand;
 import frc.robot.commands.autos.AutoInterface;
 import frc.robot.constants.AutoConstants;
 import frc.robot.constants.DriveConstants;
@@ -67,9 +65,19 @@ public class RobotContainer {
   private void configureBindings() {
     drivetrain.setDefaultCommand(
         drivetrain.applyRequest(this::getDefaultDriveRequest).ignoringDisable(true));
+
     drivetrain.registerTelemetry(DriveConstants.LOGGER::telemeterize);
 
     driverJoystick.a().onTrue(drivetrain.runOnce(drivetrain::seedFieldRelative));
+
+    driverJoystick
+        .x()
+        .whileTrue(
+            new PoseAimCommand(
+                drivetrain,
+                FieldPositions.getInstance().getFeederPose(),
+                () -> processedJoystick.get(JoystickAxis.Ly),
+                () -> processedJoystick.get(JoystickAxis.Lx)));
 
     driverJoystick
         .rightStick()
@@ -89,8 +97,9 @@ public class RobotContainer {
     driverJoystick
         .rightTrigger()
         .whileTrue(
-            new SpeakerAimCommand(
+            new PoseAimCommand(
                 drivetrain,
+                FieldPositions.getInstance().getSpeakerCenter(),
                 () -> processedJoystick.get(JoystickAxis.Ly),
                 () -> processedJoystick.get(JoystickAxis.Lx)));
 
@@ -103,11 +112,6 @@ public class RobotContainer {
         .rightBumper()
         .whileTrue(manipulator.distanceShoot(this::getDistanceToSpeaker))
         .onFalse(manipulator.stopManipulator());
-
-    new Trigger(manipulator::isNoteInIntake)
-        .debounce(0.5)
-        .onTrue(CANdle.runOnce(() -> CANdle.setColor(Color.kGreen)))
-        .onFalse(CANdle.runOnce(() -> CANdle.setAllianceColor()));
   }
 
   /**

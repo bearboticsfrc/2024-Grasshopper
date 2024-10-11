@@ -4,7 +4,7 @@ import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.path.PathPlannerPath;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import frc.robot.commands.SpeakerAimCommand;
+import frc.robot.commands.PoseAimCommand;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.manipulator.ManipulatorSubsystem;
 import java.util.function.DoubleSupplier;
@@ -23,7 +23,7 @@ public class AutoUtils {
       ManipulatorSubsystem manipulator,
       DoubleSupplier distanceToSpeaker) {
     return Commands.sequence(
-        new SpeakerAimCommand(drivetrain), manipulator.distanceShoot(distanceToSpeaker));
+        new PoseAimCommand(drivetrain), manipulator.distanceShoot(distanceToSpeaker));
   }
 
   /**

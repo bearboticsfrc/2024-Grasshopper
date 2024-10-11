@@ -8,16 +8,14 @@ import com.ctre.phoenix6.mechanisms.swerve.SwerveRequest;
 import com.pathplanner.lib.commands.FollowPathCommand;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
-import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.bearbotics.location.FieldPositions;
 import frc.bearbotics.util.ProcessedJoystick;
 import frc.bearbotics.util.ProcessedJoystick.JoystickAxis;
 import frc.bearbotics.util.ProcessedJoystick.ThrottleProfile;
-import frc.robot.commands.SpeakerAimCommand;
+import frc.robot.commands.PoseAimCommand;
 import frc.robot.commands.autos.AutoInterface;
 import frc.robot.constants.AutoConstants;
 import frc.robot.constants.DriveConstants;
@@ -41,6 +39,10 @@ public class RobotContainer {
   /* Our driver joystick */
   private final CommandXboxController driverJoystick =
       new CommandXboxController(DriveConstants.DRIVER_CONTROLLER_PORT);
+
+  /* Our operator joystick */
+  private final CommandXboxController operatorJoystick =
+      new CommandXboxController(DriveConstants.OPERATOR_CONTROLLER_PORT);
 
   /* Our processed joystick inputs */
   private final ProcessedJoystick processedJoystick =
@@ -67,6 +69,7 @@ public class RobotContainer {
   private void configureBindings() {
     drivetrain.setDefaultCommand(
         drivetrain.applyRequest(this::getDefaultDriveRequest).ignoringDisable(true));
+
     drivetrain.registerTelemetry(DriveConstants.LOGGER::telemeterize);
 
     driverJoystick.a().onTrue(drivetrain.runOnce(drivetrain::seedFieldRelative));
@@ -89,8 +92,9 @@ public class RobotContainer {
     driverJoystick
         .rightTrigger()
         .whileTrue(
-            new SpeakerAimCommand(
+            new PoseAimCommand(
                 drivetrain,
+                FieldPositions.getInstance()::getSpeakerCenter,
                 () -> processedJoystick.get(JoystickAxis.Ly),
                 () -> processedJoystick.get(JoystickAxis.Lx)));
 
@@ -104,10 +108,12 @@ public class RobotContainer {
         .whileTrue(manipulator.distanceShoot(this::getDistanceToSpeaker))
         .onFalse(manipulator.stopManipulator());
 
-    new Trigger(manipulator::isNoteInIntake)
-        .debounce(0.5)
-        .onTrue(CANdle.runOnce(() -> CANdle.setColor(Color.kGreen)))
-        .onFalse(CANdle.runOnce(() -> CANdle.setAllianceColor()));
+    operatorJoystick
+        .rightTrigger()
+        .whileTrue(
+            new PoseAimCommand(drivetrain, FieldPositions.getInstance()::getFeederPose)
+                .andThen(manipulator.feederShoot()))
+        .onFalse(manipulator.stopManipulator());
   }
 
   /**

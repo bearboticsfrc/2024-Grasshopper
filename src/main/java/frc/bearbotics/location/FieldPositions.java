@@ -130,6 +130,16 @@ public class FieldPositions {
     return transform;
   }
 
+  public Pose2d getFeederPose() {
+    Pose2d pose = new Pose2d(1.8796, 6.731, new Rotation2d());
+
+    if (AllianceColor.getAlliance().equals(Alliance.Red)) {
+      pose = new Pose2d(14.6304, 6.731, new Rotation2d());
+    }
+
+    return pose;
+  }
+
   public Pose2d getAmp() {
     int tagId = VisionConstants.TAG.BLUE_AMP.getValue();
 

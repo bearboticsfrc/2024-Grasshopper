@@ -6,11 +6,14 @@ package frc.robot;
 
 import com.ctre.phoenix6.mechanisms.swerve.SwerveRequest;
 import com.pathplanner.lib.commands.FollowPathCommand;
+import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.bearbotics.location.FieldPositions;
 import frc.bearbotics.util.ProcessedJoystick;
 import frc.bearbotics.util.ProcessedJoystick.JoystickAxis;
@@ -22,6 +25,7 @@ import frc.robot.constants.DriveConstants;
 import frc.robot.constants.RobotConstants;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CANdleSubsystem;
+import frc.robot.subsystems.CANdleSubsystem.CANdlePattern;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.manipulator.ManipulatorSubsystem;
 import org.photonvision.PhotonUtils;
@@ -52,6 +56,9 @@ public class RobotContainer {
   /* Our auto command choose on Shuffleboard */
   private final SendableChooser<Command> autoCommandChooser = new SendableChooser<>();
 
+  /* Whether we are in teleop or not */
+  private boolean inTeleop = false;
+
   public RobotContainer() {
     configureBindings();
     setupShuffleboardTab(RobotConstants.COMPETITION_TAB);
@@ -67,6 +74,14 @@ public class RobotContainer {
 
   /** Configure the joystick bindings for the robot. */
   private void configureBindings() {
+    new Trigger(manipulator::isNoteInIntake)
+        .and(this::isInTeleop)
+        .debounce(0.1)
+        .onTrue(
+            Commands.runOnce(() -> driverJoystick.getHID().setRumble(RumbleType.kBothRumble, 1)))
+        .onFalse(
+            Commands.runOnce(() -> driverJoystick.getHID().setRumble(RumbleType.kBothRumble, 0)));
+
     drivetrain.setDefaultCommand(
         drivetrain.applyRequest(this::getDefaultDriveRequest).ignoringDisable(true));
 
@@ -80,7 +95,7 @@ public class RobotContainer {
         .onFalse(Commands.runOnce(() -> setThrottleProfile(ThrottleProfile.NORMAL)));
 
     driverJoystick
-        .leftStick()
+        .leftBumper()
         .whileTrue(Commands.runOnce(() -> setThrottleProfile(ThrottleProfile.TURTLE)))
         .onFalse(Commands.runOnce(() -> setThrottleProfile(ThrottleProfile.NORMAL)));
 
@@ -99,7 +114,7 @@ public class RobotContainer {
                 () -> processedJoystick.get(JoystickAxis.Lx)));
 
     driverJoystick
-        .leftBumper()
+        .povDown()
         .whileTrue(manipulator.subwooferShoot())
         .onFalse(manipulator.stopManipulator());
 
@@ -114,6 +129,11 @@ public class RobotContainer {
             new PoseAimCommand(drivetrain, FieldPositions.getInstance()::getFeederPose)
                 .andThen(manipulator.feederShoot()))
         .onFalse(manipulator.stopManipulator());
+
+    operatorJoystick
+        .y()
+        .onTrue(CANdle.runOnce(() -> CANdle.setPattern(CANdlePattern.STROBE, Color.kYellow)))
+        .onFalse(CANdle.runOnce(CANdle::setAllianceColor));
   }
 
   /**
@@ -189,8 +209,14 @@ public class RobotContainer {
     return autoCommandChooser.getSelected();
   }
 
+  private boolean isInTeleop() {
+    return inTeleop;
+  }
+
   /** Ran on teleop init. Stops the manipulator */
   public void teleopInit() {
+    inTeleop = true;
+
     manipulator.stopManipulator().schedule();
   }
 }

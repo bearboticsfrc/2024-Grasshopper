@@ -52,10 +52,10 @@ public class ProcessedJoystick {
         rawInput = joystick.getLeftX();
         break;
       case Ry:
-        rawInput = -joystick.getRightY();
+        rawInput = joystick.getRightY();
         break;
       case Rx:
-        rawInput = -joystick.getRightX();
+        rawInput = joystick.getRightX();
         break;
       default:
         rawInput = 0;
@@ -89,7 +89,7 @@ public class ProcessedJoystick {
   public enum ThrottleProfile {
     TURBO(2),
     NORMAL(1),
-    TURTLE(0.1);
+    TURTLE(0.25);
 
     private final double MAX_VELOCITY = DriveConstants.MAX_VELOCITY;
 

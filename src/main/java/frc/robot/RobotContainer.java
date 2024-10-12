@@ -23,6 +23,7 @@ import frc.robot.commands.autos.AutoInterface;
 import frc.robot.constants.AutoConstants;
 import frc.robot.constants.DriveConstants;
 import frc.robot.constants.RobotConstants;
+import frc.robot.constants.manipulator.IntakeConstants.IntakeVelocity;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CANdleSubsystem;
 import frc.robot.subsystems.CANdleSubsystem.CANdlePattern;
@@ -117,6 +118,11 @@ public class RobotContainer {
         .povDown()
         .whileTrue(manipulator.subwooferShoot())
         .onFalse(manipulator.stopManipulator());
+
+    driverJoystick
+        .povUp()
+        .onTrue(manipulator.setIntake(IntakeVelocity.REVERSE))
+        .onFalse(manipulator.stopIntake());
 
     driverJoystick
         .rightBumper()

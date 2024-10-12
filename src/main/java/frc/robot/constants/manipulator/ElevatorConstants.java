@@ -17,13 +17,13 @@ public abstract class ElevatorConstants {
               Map.entry(0.0, 19.0),
               Map.entry(1.106401, 21.0),
               Map.entry(1.641402, 15.5),
-              Map.entry(2.191402, 11.0),
-              Map.entry(2.721402, 8.0),
-              Map.entry(3.171402, 6.0),
-              Map.entry(3.611402, 5.0),
-              Map.entry(4.221402, 2.75),
-              Map.entry(4.571402, 2.0),
-              Map.entry(4.971402, 1.6),
+              Map.entry(2.191402, 11.5),
+              Map.entry(2.721402, 8.5),
+              Map.entry(3.171402, 6.5),
+              Map.entry(3.611402, 5.5),
+              Map.entry(4.221402, 3.25),
+              Map.entry(4.571402, 2.5),
+              Map.entry(4.971402, 1.8),
               Map.entry(5.0, 1.3)));
 
   public static class ElevatorMotor {

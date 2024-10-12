@@ -32,7 +32,7 @@ public class Sub3W3 implements AutoInterface {
       ManipulatorSubsystem manipulator,
       DoubleSupplier distanceToSpeaker) {
     return Commands.sequence(
-        manipulator.distanceShoot(distanceToSpeaker),
+        manipulator.subwooferShoot(),
         AutoUtils.followPathAndIntake(SUB3_W3, manipulator),
         AutoUtils.distanceShoot(drivetrain, manipulator, distanceToSpeaker));
   }

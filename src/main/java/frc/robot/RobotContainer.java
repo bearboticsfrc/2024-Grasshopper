@@ -120,7 +120,7 @@ public class RobotContainer {
         .onFalse(manipulator.stopManipulator());
 
     driverJoystick
-        .povUp()
+        .b()
         .onTrue(manipulator.setIntake(IntakeVelocity.REVERSE))
         .onFalse(manipulator.stopIntake());
 

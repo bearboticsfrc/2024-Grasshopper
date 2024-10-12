@@ -20,7 +20,7 @@ import frc.robot.constants.manipulator.ElevatorConstants.ElevatorPosition;
 import java.util.Collections;
 
 public class ElevatorSubsystem extends SubsystemBase {
-  private final boolean SHUFFLEBOARD_ENABLED = false;
+  private final boolean SHUFFLEBOARD_ENABLED = true;
 
   private CANSparkMax elevatorMotor;
   private RelativeEncoder elevatorMotorEncoder;

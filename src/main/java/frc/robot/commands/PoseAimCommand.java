@@ -6,6 +6,7 @@ import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.Command;
+import frc.robot.constants.RobotConstants;
 import frc.robot.constants.commands.PoseAimConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import java.util.function.DoubleSupplier;
@@ -32,6 +33,11 @@ public class PoseAimCommand extends Command {
 
   private Supplier<Pose2d> targetPose;
   private boolean endless = false;
+
+  private Rotation2d offsetRotation = Rotation2d.fromDegrees(0);
+  private boolean finished;
+
+  private static boolean set = false;
 
   /**
    * Constructs the SpeakerAimCommand for aiming at the speaker with x and y velocity suppliers for
@@ -69,6 +75,12 @@ public class PoseAimCommand extends Command {
     rotationalPIDController.setTolerance(PoseAimConstants.SETPOINT_TOLERANCE.getRadians());
     rotationalPIDController.setSetpoint(Math.toRadians(180));
 
+    if (!set) {
+      RobotConstants.POSE_AIM_TAB.addBoolean("At setpoint", () -> finished);
+      RobotConstants.POSE_AIM_TAB.addDouble("Yaw offset", () -> offsetRotation.getDegrees());
+      set = true;
+    }
+
     addRequirements(drivetrain);
   }
 
@@ -90,7 +102,7 @@ public class PoseAimCommand extends Command {
    * @return A swerve request describing how we want to align
    */
   public SwerveRequest getSwerveRequest() {
-    Rotation2d offsetRotation = getYawToPose();
+    offsetRotation = getYawToPose();
     double rotateOutput = -rotationalPIDController.calculate(offsetRotation.getRadians());
 
     return swerveRequest
@@ -111,9 +123,11 @@ public class PoseAimCommand extends Command {
   /** Returns true if the PID controller indicates we are aimed. */
   @Override
   public boolean isFinished() {
-    return endless
-        ? false
-        : rotationSetpointDebouncer.calculate(rotationalPIDController.atSetpoint());
+    if (!endless) {
+      finished = rotationSetpointDebouncer.calculate(rotationalPIDController.atSetpoint());
+    }
+
+    return endless ? false : finished;
   }
 
   /** Stops any robot movement */

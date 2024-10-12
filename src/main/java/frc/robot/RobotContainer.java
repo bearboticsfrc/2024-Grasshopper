@@ -78,10 +78,21 @@ public class RobotContainer {
     new Trigger(manipulator::isNoteInIntake)
         .and(this::isInTeleop)
         .debounce(0.1)
-        .onTrue(
-            Commands.runOnce(() -> driverJoystick.getHID().setRumble(RumbleType.kBothRumble, 1)))
+        .whileTrue(
+            Commands.runOnce(() -> driverJoystick.getHID().setRumble(RumbleType.kBothRumble, 1))
+                .andThen(
+                    Commands.waitSeconds(1),
+                    Commands.runOnce(
+                        () -> driverJoystick.getHID().setRumble(RumbleType.kBothRumble, 0))))
         .onFalse(
             Commands.runOnce(() -> driverJoystick.getHID().setRumble(RumbleType.kBothRumble, 0)));
+
+    new Trigger(manipulator::isNoteInIntake)
+        .debounce(0.1)
+        .onTrue(
+            CANdle.runOnce(() -> CANdle.setPattern(CANdlePattern.STROBE, Color.kGreen))
+                .andThen(
+                    Commands.waitSeconds(1.5), CANdle.runOnce(() -> CANdle.setAllianceColor())));
 
     drivetrain.setDefaultCommand(
         drivetrain.applyRequest(this::getDefaultDriveRequest).ignoringDisable(true));

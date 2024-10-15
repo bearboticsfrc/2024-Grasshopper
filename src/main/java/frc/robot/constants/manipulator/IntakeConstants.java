@@ -23,7 +23,8 @@ public abstract class IntakeConstants {
   public enum IntakeVelocity {
     REVERSE(-1),
     OFF(0),
-    FULL(1);
+    FULL(1),
+    HALF(0.5);
 
     private final double speed;
 

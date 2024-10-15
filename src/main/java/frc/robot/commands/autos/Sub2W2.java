@@ -33,7 +33,7 @@ public class Sub2W2 implements AutoInterface {
       DoubleSupplier distanceToSpeaker) {
 
     return Commands.sequence(
-        manipulator.distanceShoot(distanceToSpeaker),
+        manipulator.subwooferShoot(),
         AutoUtils.followPathAndIntake(SUB2_W2, manipulator),
         AutoUtils.distanceShoot(drivetrain, manipulator, distanceToSpeaker));
   }

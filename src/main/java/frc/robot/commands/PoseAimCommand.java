@@ -24,7 +24,7 @@ public class PoseAimCommand extends Command {
   private final Debouncer rotationSetpointDebouncer = new Debouncer(0.1);
 
   private final SwerveRequest.FieldCentric swerveRequest =
-      new SwerveRequest.FieldCentric().withDeadband(0.1);
+      new SwerveRequest.FieldCentric().withDeadband(0.25);
   private final SwerveRequest.Idle idleSwerveRequest = new SwerveRequest.Idle();
 
   private DoubleSupplier xVelocitySupplier = () -> 0;

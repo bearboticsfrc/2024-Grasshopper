@@ -14,16 +14,16 @@ public abstract class ElevatorConstants {
   public static final SortedMap<Double, Double> SHOOT_ANGLE_MAP =
       new TreeMap<>(
           Map.ofEntries(
-              Map.entry(0.0, 18.0),
-              Map.entry(1.106401, 20.0),
+              Map.entry(0.0, 19.0),
+              Map.entry(1.106401, 21.0),
               Map.entry(1.641402, 15.5),
-              Map.entry(2.191402, 10.0),
-              Map.entry(2.721402, 7.0),
-              Map.entry(3.171402, 5.0),
-              Map.entry(3.611402, 4.0),
-              Map.entry(4.221402, 2.55),
-              Map.entry(4.571402, 1.8),
-              Map.entry(4.971402, 1.3),
+              Map.entry(2.191402, 11.5),
+              Map.entry(2.721402, 8.5),
+              Map.entry(3.171402, 6.5),
+              Map.entry(3.611402, 5.5),
+              Map.entry(4.221402, 3.25),
+              Map.entry(4.571402, 2.5),
+              Map.entry(4.971402, 1.8),
               Map.entry(5.0, 1.3)));
 
   public static class ElevatorMotor {
@@ -42,7 +42,7 @@ public abstract class ElevatorConstants {
 
   public enum ElevatorPosition {
     HOME(0),
-    SPEAKER(15),
+    SPEAKER(17),
     FEEDER(12.5);
 
     private double position;

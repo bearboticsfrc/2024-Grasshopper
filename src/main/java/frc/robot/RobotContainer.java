@@ -6,11 +6,15 @@ package frc.robot;
 
 import com.ctre.phoenix6.mechanisms.swerve.SwerveRequest;
 import com.pathplanner.lib.commands.FollowPathCommand;
+import edu.wpi.first.wpilibj.GenericHID.RumbleType;
+import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.bearbotics.location.FieldPositions;
 import frc.bearbotics.util.ProcessedJoystick;
 import frc.bearbotics.util.ProcessedJoystick.JoystickAxis;
@@ -20,8 +24,10 @@ import frc.robot.commands.autos.AutoInterface;
 import frc.robot.constants.AutoConstants;
 import frc.robot.constants.DriveConstants;
 import frc.robot.constants.RobotConstants;
+import frc.robot.constants.manipulator.IntakeConstants.IntakeVelocity;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CANdleSubsystem;
+import frc.robot.subsystems.CANdleSubsystem.CANdlePattern;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.manipulator.ManipulatorSubsystem;
 import org.photonvision.PhotonUtils;
@@ -52,6 +58,9 @@ public class RobotContainer {
   /* Our auto command choose on Shuffleboard */
   private final SendableChooser<Command> autoCommandChooser = new SendableChooser<>();
 
+  /* Whether we are in teleop or not */
+  private boolean inTeleop = false;
+
   public RobotContainer() {
     configureBindings();
     setupShuffleboardTab(RobotConstants.COMPETITION_TAB);
@@ -67,6 +76,19 @@ public class RobotContainer {
 
   /** Configure the joystick bindings for the robot. */
   private void configureBindings() {
+    /* Configure driver controllers */
+    new Trigger(manipulator::isNoteInIntake)
+        .and(this::isInTeleop)
+        .debounce(0.1)
+        .onTrue(rumbleController(driverJoystick.getHID(), 1));
+
+    new Trigger(manipulator::isNoteInIntake)
+        .debounce(0.1)
+        .onTrue(
+            CANdle.runOnce(() -> CANdle.setPattern(CANdlePattern.STROBE, Color.kGreen))
+                .andThen(
+                    Commands.waitSeconds(1.5), CANdle.runOnce(() -> CANdle.setAllianceColor())));
+
     drivetrain.setDefaultCommand(
         drivetrain.applyRequest(this::getDefaultDriveRequest).ignoringDisable(true));
 
@@ -75,13 +97,13 @@ public class RobotContainer {
     driverJoystick.a().onTrue(drivetrain.runOnce(drivetrain::seedFieldRelative));
 
     driverJoystick
-        .rightStick()
-        .whileTrue(Commands.runOnce(() -> setThrottleProfile(ThrottleProfile.TURBO)))
-        .onFalse(Commands.runOnce(() -> setThrottleProfile(ThrottleProfile.NORMAL)));
+        .b()
+        .onTrue(manipulator.setIntake(IntakeVelocity.REVERSE))
+        .onFalse(manipulator.stopIntake());
 
     driverJoystick
-        .leftStick()
-        .whileTrue(Commands.runOnce(() -> setThrottleProfile(ThrottleProfile.TURTLE)))
+        .rightStick()
+        .whileTrue(Commands.runOnce(() -> setThrottleProfile(ThrottleProfile.TURBO)))
         .onFalse(Commands.runOnce(() -> setThrottleProfile(ThrottleProfile.NORMAL)));
 
     driverJoystick
@@ -99,7 +121,7 @@ public class RobotContainer {
                 () -> processedJoystick.get(JoystickAxis.Lx)));
 
     driverJoystick
-        .leftBumper()
+        .povDown()
         .whileTrue(manipulator.subwooferShoot())
         .onFalse(manipulator.stopManipulator());
 
@@ -108,12 +130,31 @@ public class RobotContainer {
         .whileTrue(manipulator.distanceShoot(this::getDistanceToSpeaker))
         .onFalse(manipulator.stopManipulator());
 
+    driverJoystick
+        .leftBumper()
+        .whileTrue(Commands.runOnce(() -> setThrottleProfile(ThrottleProfile.TURTLE)))
+        .onFalse(Commands.runOnce(() -> setThrottleProfile(ThrottleProfile.NORMAL)));
+
+    /* Configure operator joysticks */
+
     operatorJoystick
         .rightTrigger()
         .whileTrue(
             new PoseAimCommand(drivetrain, FieldPositions.getInstance()::getFeederPose)
                 .andThen(manipulator.feederShoot()))
         .onFalse(manipulator.stopManipulator());
+
+    operatorJoystick
+        .y()
+        .onTrue(CANdle.runOnce(() -> CANdle.setPattern(CANdlePattern.STROBE, Color.kYellow)))
+        .onFalse(CANdle.runOnce(CANdle::setAllianceColor));
+  }
+
+  private Command rumbleController(XboxController hid, double duration) {
+    return Commands.runOnce(() -> hid.setRumble(RumbleType.kBothRumble, 1))
+        .andThen(
+            Commands.waitSeconds(duration),
+            Commands.runOnce(() -> hid.setRumble(RumbleType.kBothRumble, 1)));
   }
 
   /**
@@ -189,8 +230,14 @@ public class RobotContainer {
     return autoCommandChooser.getSelected();
   }
 
+  private boolean isInTeleop() {
+    return inTeleop;
+  }
+
   /** Ran on teleop init. Stops the manipulator */
   public void teleopInit() {
+    inTeleop = true;
+
     manipulator.stopManipulator().schedule();
   }
 }

@@ -68,12 +68,19 @@ public class CANdleSubsystem extends SubsystemBase implements AllianceReadyListe
     setColor(Color.kBlack);
   }
 
+  /** Sets the color of the entire LED strip to the current alliance's color. */
+  public void setAllianceColor() {
+    setColor(getColorFromAlliance(AllianceColor.getAlliance()));
+  }
+
   /**
    * Sets the color of the entire LED strip to the specified color.
    *
    * @param color the color of the leds
    */
   public void setColor(Color color) {
+    CANdle.clearAnimation(0);
+
     currentColor = color;
     CANdle.setLEDs(
         (int) (currentColor.red * 255),
@@ -81,17 +88,13 @@ public class CANdleSubsystem extends SubsystemBase implements AllianceReadyListe
         (int) (currentColor.blue * 255));
   }
 
-  /** Sets the color of the entire LED strip to the current alliance's color. */
-  public void setAllianceColor() {
-    setColor(getColorFromAlliance(AllianceColor.getAlliance()));
-  }
   /**
    * Sets a specific animation pattern with a specified color. Supports strobe and larson patterns.
    *
    * @param pattern The animation to display on the LEDs.
    * @param color The color to use for the animation.
    */
-  public void setPattern(CandlePattern pattern, Color color) {
+  public void setPattern(CANdlePattern pattern, Color color) {
     clear();
 
     switch (pattern) {
@@ -143,7 +146,6 @@ public class CANdleSubsystem extends SubsystemBase implements AllianceReadyListe
             0,
             speed,
             400);
-
     setAnimation(animation, 0);
   }
 
@@ -152,7 +154,7 @@ public class CANdleSubsystem extends SubsystemBase implements AllianceReadyListe
     CANdle.animate(animation, 0);
   }
 
-  public enum CandlePattern {
+  public enum CANdlePattern {
     /** A strobing effect, rapidly blinking the LEDs on and off. */
     STROBE,
 

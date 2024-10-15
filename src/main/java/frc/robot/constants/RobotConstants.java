@@ -9,5 +9,4 @@ public class RobotConstants {
   public static final ShuffleboardTab ELEVATOR_SYSTEM_TAB =
       Shuffleboard.getTab("Elevator Subsystem");
   public static final ShuffleboardTab INTAKE_SYSTEM_TAB = Shuffleboard.getTab("Intake Subsytem");
-  public static final ShuffleboardTab POSE_AIM_TAB = Shuffleboard.getTab("Pose Aim");
 }

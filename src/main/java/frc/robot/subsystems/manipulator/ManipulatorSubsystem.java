@@ -25,6 +25,10 @@ public class ManipulatorSubsystem extends SubsystemBase {
     elevator = new ElevatorSubsystem();
   }
 
+  public IntakeSubsystem getIntake() {
+    return intake;
+  }
+
   public boolean isNoteInIntake() {
     return intake.isNoteInRoller() || intake.isNoteInShooter();
   }

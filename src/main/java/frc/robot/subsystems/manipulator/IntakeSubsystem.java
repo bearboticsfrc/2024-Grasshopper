@@ -92,4 +92,13 @@ public class IntakeSubsystem extends SubsystemBase {
   public void stopMotor() {
     intakeMotor.stopMotor();
   }
+
+  /**
+   * Get the intake motor's velocity
+   * 
+   * @return The velocity
+   */
+  public double getVelocity() {
+    return intakeMotor.get();
+  }
 }

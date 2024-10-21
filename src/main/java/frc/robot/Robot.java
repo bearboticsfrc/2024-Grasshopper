@@ -12,6 +12,7 @@ import frc.bearbotics.fms.AllianceColor;
 
 public class Robot extends TimedRobot {
   private Command autonomousCommand;
+  private Command testCommand;
 
   private RobotContainer robotContainer;
 
@@ -68,6 +69,12 @@ public class Robot extends TimedRobot {
   @Override
   public void testInit() {
     CommandScheduler.getInstance().cancelAll();
+
+    testCommand = robotContainer.getTestCommand();
+
+    if (testCommand != null) {
+      testCommand.schedule();
+    }
   }
 
   @Override

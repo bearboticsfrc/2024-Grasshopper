@@ -30,6 +30,8 @@ import frc.robot.subsystems.CANdleSubsystem;
 import frc.robot.subsystems.CANdleSubsystem.CANdlePattern;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.manipulator.ManipulatorSubsystem;
+import frc.robot.tests.IntakeMotorTest;
+import frc.robot.tests.SubsystemTester;
 import org.photonvision.PhotonUtils;
 
 public class RobotContainer {
@@ -58,6 +60,9 @@ public class RobotContainer {
   /* Our auto command choose on Shuffleboard */
   private final SendableChooser<Command> autoCommandChooser = new SendableChooser<>();
 
+  /* Our test command chooser on Shuffleboard */
+  private final SendableChooser<Command> testCommandChooser = new SendableChooser<>();
+
   /* Whether we are in teleop or not */
   private boolean inTeleop = false;
 
@@ -65,6 +70,7 @@ public class RobotContainer {
     configureBindings();
     setupShuffleboardTab(RobotConstants.COMPETITION_TAB);
     buildAutoList();
+    buildTestList();
   }
 
   private void setupShuffleboardTab(ShuffleboardTab shuffleboardTab) {
@@ -221,6 +227,21 @@ public class RobotContainer {
         .withPosition(0, 1);
   }
 
+  private void buildTestList() {
+    testCommandChooser.setDefaultOption("0 - NoOp", Commands.idle());
+    testCommandChooser.addOption(
+        "1 - Intake Motor Test",
+        new SubsystemTester(IntakeMotorTest.get(manipulator.getIntake()), CANdle));
+    /*testCommandChooser.addOption(
+        "2 - Intake Sensor Test",
+        new SubsystemTester(IntakeSensorTest.get(manipulator.getIntake()), CANdle));
+    */
+    RobotConstants.COMPETITION_TAB
+        .add("Subsystem Tester", testCommandChooser)
+        .withSize(4, 1)
+        .withPosition(0, 2);
+  }
+
   /**
    * Get the autonomous command.
    *
@@ -228,6 +249,10 @@ public class RobotContainer {
    */
   public Command getAutonomousCommand() {
     return autoCommandChooser.getSelected();
+  }
+
+  public Command getTestCommand() {
+    return testCommandChooser.getSelected();
   }
 
   private boolean isInTeleop() {

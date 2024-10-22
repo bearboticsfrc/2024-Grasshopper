@@ -4,7 +4,6 @@ import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFieldLayout.OriginPosition;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.Pose3d;
-import edu.wpi.first.wpilibj.DataLogManager;
 import frc.robot.constants.VisionConstants;
 import java.util.ArrayList;
 import java.util.List;
@@ -55,10 +54,8 @@ public class EstimationRunnable implements Runnable {
 
   public CameraPoseResultantIdentity getTransform(PhotonPipelineResult result) {
     int count = 0;
-    double y = 0;
-    double x = 0;
-
-    double yaw = 0;
+    double sumY = 0;
+    double sumX = 0;
 
     List<PhotonTrackedTarget> targets = result.targets;
     double maxHype = 0;
@@ -89,26 +86,27 @@ public class EstimationRunnable implements Runnable {
 
       count += 1;
 
-      double nueralX = i.getBestCameraToTarget().getX();
-      double nueralY = i.getBestCameraToTarget().getY();
-      double nueralDist = Math.hypot(nueralX, nueralY);
-      double scalar = nueralDist / individualDist;
-      double indX = nueralX / scalar;
-      double indY = nueralY / scalar;
+      double nueralY = i.getBestCameraToTarget().getX()-tagPose.getX();
+      double nueralX = i.getBestCameraToTarget().getY()-tagPose.getY();
+      double indYaw = i.getYaw();
 
-      yaw += tagPose.getRotation().getZ() + i.getYaw();
+      // CoordinateTransform lambdaCoordinateTransform = new CoordinateTransform(nueralY, nueralX,
+      // true);
 
-      // DataLogManager.log("")
-      y += tagPose.getY() + indY;
-      x += tagPose.getX() + indX;
-      DataLogManager.log(Double.toString(individualDist));
+      CoordinateTransform trigTransform = new CoordinateTransform(individualDist, indYaw, false);
+      CoordinateTransform nueralTransform = new CoordinateTransform(nueralY, nueralX, true);
+
+      double avgR = (trigTransform.getR() + nueralTransform.getR())/2;
+      double avgTheta = (trigTransform.getTheta() + nueralTransform.getTheta())/2;
+      CoordinateTransform avgTransform = new CoordinateTransform(avgR, avgTheta, false);
+      sumY+= avgTransform.getY();
+      sumX += avgTransform.getX();
     }
-    y /= count;
-    x /= count;
-    yaw /= count;
+    sumY /= (count);
+    sumX /= (count);
     double time = result.getTimestampSeconds();
 
-    return new CameraPoseResultantIdentity(y, x, yaw, time);
+    return new CameraPoseResultantIdentity(new CoordinateTransform(sumY, sumX, true), time);
   }
 
   public CameraPoseResultantIdentity getLatestPose() {

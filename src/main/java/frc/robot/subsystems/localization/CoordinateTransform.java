@@ -7,6 +7,7 @@ public class CoordinateTransform {
   private double theta;
 
   CoordinateTransform(double ipOne, double ipTwo, Boolean isCartesian) {
+
     if (isCartesian) {
       this.y = ipOne;
       this.x = ipTwo;

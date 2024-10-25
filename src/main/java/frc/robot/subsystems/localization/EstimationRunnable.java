@@ -56,6 +56,7 @@ public class EstimationRunnable implements Runnable {
     int count = 0;
     double sumY = 0;
     double sumX = 0;
+    double sumYaw = 0;
 
     List<PhotonTrackedTarget> targets = result.targets;
     double maxHype = 0;
@@ -86,8 +87,10 @@ public class EstimationRunnable implements Runnable {
 
       count += 1;
 
-      double nueralY = i.getBestCameraToTarget().getX()-tagPose.getX();
-      double nueralX = i.getBestCameraToTarget().getY()-tagPose.getY();
+      // double nueralY = i.getBestCameraToTarget().getX()-tagPose.getX();
+      // double nueralX = i.getBestCameraToTarget().getY()-tagPose.getY();
+      double nueralY = i.getBestCameraToTarget().getX();
+      double nueralX = i.getBestCameraToTarget().getY();
       double indYaw = i.getYaw();
 
       // CoordinateTransform lambdaCoordinateTransform = new CoordinateTransform(nueralY, nueralX,
@@ -96,17 +99,19 @@ public class EstimationRunnable implements Runnable {
       CoordinateTransform trigTransform = new CoordinateTransform(individualDist, indYaw, false);
       CoordinateTransform nueralTransform = new CoordinateTransform(nueralY, nueralX, true);
 
-      double avgR = (trigTransform.getR() + nueralTransform.getR())/2;
-      double avgTheta = (trigTransform.getTheta() + nueralTransform.getTheta())/2;
+      double avgR = (trigTransform.getR() + nueralTransform.getR()) / 2;
+      double avgTheta = (trigTransform.getTheta() + nueralTransform.getTheta()) / 2;
       CoordinateTransform avgTransform = new CoordinateTransform(avgR, avgTheta, false);
-      sumY+= avgTransform.getY();
-      sumX += avgTransform.getX();
+      sumY += avgTransform.getY() + tagPose.getY();
+      sumX += avgTransform.getX() + tagPose.getX();
+      sumYaw += indYaw;
     }
+    sumYaw /= count;
     sumY /= (count);
     sumX /= (count);
     double time = result.getTimestampSeconds();
 
-    return new CameraPoseResultantIdentity(new CoordinateTransform(sumY, sumX, true), time);
+    return new CameraPoseResultantIdentity(new CoordinateTransform(sumY, sumX, true), time, sumYaw);
   }
 
   public CameraPoseResultantIdentity getLatestPose() {

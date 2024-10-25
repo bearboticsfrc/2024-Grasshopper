@@ -9,15 +9,15 @@ import edu.wpi.first.math.geometry.Transform3d;
  * you could put it in a vector data type but I want names so this is cleaner
  */
 public class CameraPoseResultantIdentity {
-
-  private double rot;
+  private double yaw;
   private double timestamp;
   CoordinateTransform transform;
 
   /*
    * constructs a new camera transform resultant identity
    */
-  public CameraPoseResultantIdentity(CoordinateTransform transform, double timestamp) {
+  public CameraPoseResultantIdentity(CoordinateTransform transform, double timestamp, double yaw) {
+    this.yaw = yaw;
     this.transform = transform;
     this.timestamp = timestamp;
   }
@@ -30,6 +30,6 @@ public class CameraPoseResultantIdentity {
     return new Pose2d(
         (transform.getX() - robotToCameraTransform.getX()),
         transform.getY() - robotToCameraTransform.getY(),
-        new Rotation2d(rot));
+        new Rotation2d(yaw));
   }
 }

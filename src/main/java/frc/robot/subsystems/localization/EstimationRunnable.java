@@ -4,6 +4,8 @@ import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFieldLayout.OriginPosition;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Transform2d;
 import frc.robot.constants.VisionConstants;
 import java.util.ArrayList;
 import java.util.List;
@@ -53,10 +55,8 @@ public class EstimationRunnable implements Runnable {
   }
 
   public CameraPoseResultantIdentity getTransform(PhotonPipelineResult result) {
-    int count = 0;
-    double sumY = 0;
-    double sumX = 0;
-    double sumYaw = 0;
+    double count = 0;
+    Transform2d sumTransform = new Transform2d();
 
     List<PhotonTrackedTarget> targets = result.targets;
     double maxHype = 0;
@@ -102,16 +102,18 @@ public class EstimationRunnable implements Runnable {
       double avgR = (trigTransform.getR() + nueralTransform.getR()) / 2;
       double avgTheta = (trigTransform.getTheta() + nueralTransform.getTheta()) / 2;
       CoordinateTransform avgTransform = new CoordinateTransform(avgR, avgTheta, false);
-      sumY += avgTransform.getY() + tagPose.getY();
-      sumX += avgTransform.getX() + tagPose.getX();
-      sumYaw += indYaw;
+      Transform2d avgTransform2d =
+          new Transform2d(avgTransform.getX(), avgTransform.getY(), Rotation2d.fromDegrees(indYaw))
+              .plus(
+                  new Transform2d(
+                      tagPose.getTranslation().toTranslation2d(),
+                      tagPose.getRotation().toRotation2d()));
+      sumTransform = sumTransform.plus(avgTransform2d);
     }
-    sumYaw /= count;
-    sumY /= (count);
-    sumX /= (count);
+    sumTransform = sumTransform.div(count);
     double time = result.getTimestampSeconds();
 
-    return new CameraPoseResultantIdentity(new CoordinateTransform(sumY, sumX, true), time, sumYaw);
+    return new CameraPoseResultantIdentity(sumTransform, time);
   }
 
   public CameraPoseResultantIdentity getLatestPose() {

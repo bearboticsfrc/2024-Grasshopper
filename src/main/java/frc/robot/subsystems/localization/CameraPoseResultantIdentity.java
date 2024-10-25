@@ -1,8 +1,7 @@
 package frc.robot.subsystems.localization;
 
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.geometry.Transform2d;
 
 /*
  * this is a necessary data type so we dont depart quantities of a vector
@@ -11,12 +10,12 @@ import edu.wpi.first.math.geometry.Transform3d;
 public class CameraPoseResultantIdentity {
   private double yaw;
   private double timestamp;
-  CoordinateTransform transform;
+  Transform2d transform;
 
   /*
    * constructs a new camera transform resultant identity
    */
-  public CameraPoseResultantIdentity(CoordinateTransform transform, double timestamp, double yaw) {
+  public CameraPoseResultantIdentity(Transform2d transform, double timestamp) {
     this.yaw = yaw;
     this.transform = transform;
     this.timestamp = timestamp;
@@ -26,10 +25,9 @@ public class CameraPoseResultantIdentity {
     return timestamp;
   }
 
-  public Pose2d getPose2d(Transform3d robotToCameraTransform) {
+  public Pose2d getPose2d(Transform2d robotToCameraTransform2d) {
     return new Pose2d(
-        (transform.getX() - robotToCameraTransform.getX()),
-        transform.getY() - robotToCameraTransform.getY(),
-        new Rotation2d(yaw));
+        (transform.plus(robotToCameraTransform2d)).getTranslation(),
+        transform.plus(robotToCameraTransform2d).getRotation());
   }
 }

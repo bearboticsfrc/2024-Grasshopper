@@ -2,6 +2,7 @@ package frc.robot.subsystems.localization;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.networktables.DoublePublisher;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StructPublisher;
@@ -56,7 +57,11 @@ public class LocalizationSubsystem extends SubsystemBase {
     if (robotPose == null) {
       return;
     }
-    Pose2d visionPose = robotPose.getPose2d(VisionConstants.CAMERA_TO_ROBOT);
+    Pose2d visionPose =
+        robotPose.getPose2d(
+            new Transform2d(
+                VisionConstants.CAMERA_TO_ROBOT.getTranslation().toTranslation2d(),
+                VisionConstants.CAMERA_TO_ROBOT.getRotation().toRotation2d()));
 
     swerve.addVisionMeasurement(visionPose, robotPose.getTimestampSeconds());
   }

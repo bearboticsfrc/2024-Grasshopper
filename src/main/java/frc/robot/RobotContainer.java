@@ -16,6 +16,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.bearbotics.location.FieldPositions;
+import frc.bearbotics.tests.SubsystemTester;
 import frc.bearbotics.util.ProcessedJoystick;
 import frc.bearbotics.util.ProcessedJoystick.JoystickAxis;
 import frc.bearbotics.util.ProcessedJoystick.ThrottleProfile;
@@ -30,8 +31,10 @@ import frc.robot.subsystems.CANdleSubsystem;
 import frc.robot.subsystems.CANdleSubsystem.CANdlePattern;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.manipulator.ManipulatorSubsystem;
+import frc.robot.tests.ElevatorMotorTest;
 import frc.robot.tests.IntakeMotorTest;
-import frc.robot.tests.SubsystemTester;
+import frc.robot.tests.IntakeSensorTest;
+import frc.robot.tests.ShooterMotorTest;
 import org.photonvision.PhotonUtils;
 
 public class RobotContainer {
@@ -228,14 +231,19 @@ public class RobotContainer {
   }
 
   private void buildTestList() {
-    testCommandChooser.setDefaultOption("0 - NoOp", Commands.idle());
     testCommandChooser.addOption(
         "1 - Intake Motor Test",
-        new SubsystemTester(IntakeMotorTest.get(manipulator.getIntake()), CANdle));
-    /*testCommandChooser.addOption(
+        new SubsystemTester(new IntakeMotorTest(manipulator.getIntake()), CANdle));
+    testCommandChooser.addOption(
         "2 - Intake Sensor Test",
-        new SubsystemTester(IntakeSensorTest.get(manipulator.getIntake()), CANdle));
-    */
+        new SubsystemTester(new IntakeSensorTest(manipulator.getIntake()), CANdle));
+    testCommandChooser.addOption(
+        "3 - Shooter Motor Test",
+        new SubsystemTester(new ShooterMotorTest(manipulator.getShooter()), CANdle));
+    testCommandChooser.addOption(
+        "4 - Elevator Motor Test",
+        new SubsystemTester(new ElevatorMotorTest(manipulator.getElevator()), CANdle));
+
     RobotConstants.COMPETITION_TAB
         .add("Subsystem Tester", testCommandChooser)
         .withSize(4, 1)

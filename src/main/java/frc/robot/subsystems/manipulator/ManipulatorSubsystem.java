@@ -29,6 +29,14 @@ public class ManipulatorSubsystem extends SubsystemBase {
     return intake;
   }
 
+  public ShooterSubsystem getShooter() {
+    return shooter;
+  }
+
+  public ElevatorSubsystem getElevator() {
+    return elevator;
+  }
+
   public boolean isNoteInIntake() {
     return intake.isNoteInRoller() || intake.isNoteInShooter();
   }

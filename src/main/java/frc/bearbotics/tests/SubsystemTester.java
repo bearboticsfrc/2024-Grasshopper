@@ -1,4 +1,4 @@
-package frc.robot.tests;
+package frc.bearbotics.tests;
 
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
@@ -12,6 +12,7 @@ public class SubsystemTester extends Command {
   private final CANdleSubsystem candle;
 
   private boolean isFinished = false;
+  private boolean isSuccess = false;
 
   public SubsystemTester(TestableInterface test, CANdleSubsystem candle) {
     this.test = test;
@@ -24,12 +25,22 @@ public class SubsystemTester extends Command {
 
     try {
       test.run();
-      strobeCandle(Color.kGreen, 1.5);
+      isSuccess = true;
     } catch (AssertionError error) {
-      DriverStation.reportError(error.getMessage(), error.getStackTrace());
-      strobeCandle(Color.kRed, 1.5);
+      DriverStation.reportError(error.getMessage(), false);
+      isSuccess = false;
     } finally {
+      test.end();
       isFinished = true;
+    }
+  }
+
+  @Override
+  public void end(boolean interrupted) {
+    if (isSuccess) {
+      strobeCandle(Color.kGreen, 1.5);
+    } else {
+      strobeCandle(Color.kRed, 1.5);
     }
   }
 

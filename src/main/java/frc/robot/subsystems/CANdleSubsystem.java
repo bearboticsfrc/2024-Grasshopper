@@ -122,7 +122,7 @@ public class CANdleSubsystem extends SubsystemBase implements AllianceReadyListe
             (int) (color.blue * 255),
             0,
             speed,
-            400,
+            CANdleConstants.CANDLE_SIZE,
             BounceMode.Back,
             1);
 
@@ -145,7 +145,7 @@ public class CANdleSubsystem extends SubsystemBase implements AllianceReadyListe
             (int) (color.blue * 255),
             0,
             speed,
-            400);
+            CANdleConstants.CANDLE_SIZE);
     setAnimation(animation, 0);
   }
 

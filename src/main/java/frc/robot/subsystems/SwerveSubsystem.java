@@ -79,4 +79,8 @@ public class SwerveSubsystem extends SubsystemBase {
               false);
         });
   }
+
+  public SwerveDrive getSwerveDrive() {
+    return this.swerveDrive;
+  }
 }
